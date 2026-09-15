@@ -193,7 +193,9 @@
       "cadence_min": 15,
       "enabled": true,
       "interval_minutes": 15,
-      "note": "直达地震事件列表表格页面"
+      "note": "3秒快速通道：仅内容变化时发送，不做关键词过滤",
+      "interval_seconds": 3,
+      "lightweight": true
     },
     {
       "category": "地震",
@@ -405,14 +407,15 @@
     {
       "category": "水文洪水",
       "category_id": "flood",
-      "name": "Global Floods (GloFAS 门户)",
+      "name": "GloFAS 洪水地图查看器",
       "rule_id": "flood-03",
       "source_id": "flood-03",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://www.globalfloods.eu/",
+      "url": "https://global-flood.emergency.copernicus.eu/map-viewer/",
       "enabled": true,
-      "interval_minutes": 30
+      "interval_minutes": 30,
+      "note": "中文翻译页面截图（含地图查看器主体）"
     },
     {
       "category": "水文洪水",

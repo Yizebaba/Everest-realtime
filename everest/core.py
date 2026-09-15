@@ -72,8 +72,10 @@ def run_lock(directory):
 
 class Store:
     def __init__(self, path):
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(path, timeout=15)
         self.db.row_factory = sqlite3.Row
+        self.db.execute('PRAGMA journal_mode=WAL')
+        self.db.execute('PRAGMA busy_timeout=15000')
         self.db.executescript('''
             CREATE TABLE IF NOT EXISTS baseline (
                 rule_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL,
@@ -92,7 +94,11 @@ class Store:
 
     def due(self, source, stamp):
         row = self.db.execute('SELECT checked_at FROM checks WHERE rule_id=?', (source['rule_id'],)).fetchone()
-        return row is None or (dt.datetime.fromisoformat(stamp) - dt.datetime.fromisoformat(row[0])).total_seconds() >= float(source['interval_minutes']) * 60
+        if row is None:
+            return True
+        interval = source.get('interval_seconds')
+        seconds = float(interval) if interval else float(source['interval_minutes']) * 60
+        return (dt.datetime.fromisoformat(stamp) - dt.datetime.fromisoformat(row[0])).total_seconds() >= seconds
 
     def record(self, result, path, policy, destination):
         key = result['source']['rule_id']
@@ -116,6 +122,13 @@ class Store:
                 self.db.execute('INSERT OR IGNORE INTO notices (id,run_id,rule_id,result_path,destination) VALUES (?,?,?,?,?)',
                     (result['run_id'] + ':' + key, result['run_id'], key, str(path), destination))
         return selected
+
+    def changed(self, source, result):
+        """True when this result differs from the stored baseline. Never records."""
+        row = self.db.execute('SELECT fingerprint FROM baseline WHERE rule_id=?', (source['rule_id'],)).fetchone()
+        if row is None:
+            return False
+        return row['fingerprint'] != fingerprint(result.get('matches', []))
 
     def notices(self, run_id):
         return self.db.execute("SELECT * FROM notices WHERE run_id=? AND state IN ('pending','blocked') ORDER BY rule_id", (run_id,)).fetchall()

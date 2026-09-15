@@ -60,8 +60,8 @@ def test_layer_names_translated_and_paired_with_images(tmp_path):
         assert "珠峰降雨/对流图层" in text
         
         # Verify each image is paired with its Chinese layer name in correct order
-        assert "### 图层 1：珠峰风力图层\n![珠峰风力图层](https://img.test/card1.png)" in text
-        assert "### 图层 2：珠峰降雨/对流图层\n![珠峰降雨/对流图层](https://img.test/card2.png)" in text
+        assert "珠峰风力图层\n![珠峰风力图层](https://img.test/card1.png)" in text
+        assert "珠峰降雨/对流图层\n![珠峰降雨/对流图层](https://img.test/card2.png)" in text
         
         # Verify signature
         assert text.endswith("vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］")

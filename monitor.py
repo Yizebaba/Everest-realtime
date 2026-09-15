@@ -4,6 +4,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -21,6 +22,8 @@ def run(args, settings, sources, config, store, data):
     folder = data / 'runs' / run_id
     folder.mkdir(parents=True)
     selected = [s for s in sources['sources'] if s.get('enabled', True) and (not args.source or s['rule_id'] in args.source)]
+    # interval_seconds sources belong to the fast channel; keep them out of the normal cadence.
+    selected = [s for s in selected if args.source or not s.get('interval_seconds')]
     stamp = now()
     selected = [s for s in selected if args.all or store.due(s, stamp)]
     state = {'run_id': run_id, 'phase': 'running', 'total': len(selected), 'completed': 0, 'errors': 0, 'exit_code': None}
@@ -60,6 +63,51 @@ def run(args, settings, sources, config, store, data):
     return state['exit_code']
 
 
+def fast_run(args, settings, sources, config, store, data):
+    """Fast channel: cheap HTTP polling for interval_seconds sources.
+
+    No keyword filtering. A screenshot is captured only when the content changed,
+    so a 3-second cadence stays affordable.
+    """
+    tick = float(settings.get('fast_tick_seconds', 3))
+    fast_sources = [s for s in sources['sources'] if s.get('enabled', True) and s.get('interval_seconds')]
+    if not fast_sources:
+        print('No interval_seconds sources configured', flush=True)
+        return 0
+    print(f"Fast channel started: {len(fast_sources)} source(s), tick={tick}s", flush=True)
+    while True:
+        stamp = now()
+        run_id = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ-') + uuid.uuid4().hex[:6]
+        for source in fast_sources:
+            if not store.due(source, stamp):
+                continue
+            folder = data / 'fast' / source['rule_id']
+            folder.mkdir(parents=True, exist_ok=True)
+            try:
+                result = collect(source, sources.get('defaults', {}), settings, folder, run_id)
+                is_change = store.changed(source, result)
+                if is_change:
+                    try:
+                        make_cards(result, folder, settings)
+                        result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
+                    except Exception as exc:
+                        result['card_error'] = type(exc).__name__
+                    # Snapshot per run: an unchanged later poll must not clobber the
+                    # evidence a pending notice still points at.
+                    snapshot = folder / f'{run_id}-result.json'
+                    store.record(result, snapshot, 'changed', destination(config))
+                    print(f"[fast {stamp[11:19]}] {source['rule_id']} {result['result']} changed=True", flush=True)
+                    if result.get('cards'):
+                        stats = deliver(store, run_id, config, settings)
+                        print(f"[fast] delivered {stats}", flush=True)
+                else:
+                    store.record(result, folder / 'latest-result.json', 'none', destination(config))
+                    print(f"[fast {stamp[11:19]}] {source['rule_id']} {result['result']} changed=False", flush=True)
+            except Exception as exc:
+                print(f"[fast] {source['rule_id']} error {type(exc).__name__}", flush=True)
+        time.sleep(tick)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='珠峰逐来源采集、截图数据卡与逐条通知')
     parser.add_argument('--data-dir', type=Path, default=ROOT/'data')
@@ -72,6 +120,7 @@ def main(argv=None):
     p.add_argument('--send', action='store_true', help='发送本轮已选择的逐来源图片消息')
     p = sub.add_parser('deliver')
     p.add_argument('--run-id', required=True)
+    sub.add_parser('fast')
     args = parser.parse_args(argv)
     sources = catalog(ROOT/'config/sources.json')
     if args.command == 'catalog':
@@ -93,8 +142,17 @@ def main(argv=None):
         settings['proxy'] = os.environ['HTTPS_PROXY']
     config_path = Path(os.environ.get('EVEREST_NOTIFY_FILE', str(ROOT/'config/notify.local.json')))
     config = read_json(config_path) if config_path.exists() else {}
-    if (args.command == 'deliver' or args.send) and not destination(config):
+    needs_channel = args.command in ('deliver', 'fast') or getattr(args, 'send', False)
+    if needs_channel and not destination(config):
         parser.error('Server 酱尚未配置')
+    if args.command == 'fast':
+        # The fast channel runs continuously; it uses its own lock so the normal
+        # cadence loop can still run. SQLite WAL keeps concurrent writes safe.
+        store = Store(args.data_dir/'monitor.sqlite3')
+        try:
+            return fast_run(args, settings, sources, config, store, args.data_dir)
+        finally:
+            store.close()
     with run_lock(args.data_dir):
         store = Store(args.data_dir/'monitor.sqlite3')
         try:

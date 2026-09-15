@@ -1,12 +1,27 @@
 from urllib.parse import parse_qs,urlsplit
 from PIL import Image
-from everest.translation import website_translation_url
+from everest.translation import dismiss_gates
 from everest.evidence import make_cards
 
 
-def test_translation_uses_chinese_and_original_url():
-    query=parse_qs(urlsplit(website_translation_url('https://example.test/story?a=2',source='ne')).query)
-    assert query=={'u':['https://example.test/story?a=2'],'sl':['ne'],'tl':['zh-CN']}
+def test_dismiss_gates_clicks_known_labels_only():
+    clicked = []
+    state = {'visible': True}
+    class Locator:
+        def __init__(self, text): self.text = text
+        def count(self): return 1 if (self.text == 'Accept all cookies' and state['visible']) else 0
+        @property
+        def first(self): return self
+        def is_visible(self): return state['visible']
+        def click(self, timeout=0):
+            clicked.append(self.text)
+            state['visible'] = False
+    class Page:
+        def get_by_role(self, role, name=None, exact=False): return Locator(name)
+        def get_by_text(self, text, exact=False): return Locator(text)
+        def wait_for_timeout(self, ms): pass
+    assert dismiss_gates(Page()) == ['Accept all cookies']
+    assert clicked == ['Accept all cookies']
 
 
 def test_translate_before_selecting_sent_image_preserves_original(monkeypatch,tmp_path):

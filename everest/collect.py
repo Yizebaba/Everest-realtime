@@ -117,10 +117,11 @@ def collect(source, defaults, settings, folder, run_id):
               'acquisition_errors': [], 'pending_urls': []}
     try:
         plan = settings.get('source_plans', {}).get(source['rule_id'], {})
+        lightweight = bool(source.get('lightweight'))
         map_source = plan.get('map', source.get('category_id') == 'satellite')
         queue = [{'url':source['url'], 'kind':'root'}] + [{'url':u,'kind':'endpoint'} for u in plan.get('endpoints', [])]
         seen = set()
-        max_pages = int(source.get('max_pages', settings.get('max_pages_per_source', 6)))
+        max_pages = 1 if lightweight else int(source.get('max_pages', settings.get('max_pages_per_source', 6)))
         while queue and len(seen) < max_pages:
             entry = queue.pop(0); url = entry['url']
             if url in seen: continue
@@ -136,7 +137,7 @@ def collect(source, defaults, settings, folder, run_id):
                 (target/'response.bin').write_bytes(body)
                 if entry['kind']=='root':
                     result.update(content_type=ctype, final_url=final_url, raw_path=str(target/'response.bin'))
-                if 'html' in ctype and settings.get('render_html'):
+                if 'html' in ctype and settings.get('render_html') and not lightweight:
                     from .browser import render
                     try:
                         rendered = render(url,target,settings,map_source)
@@ -160,11 +161,12 @@ def collect(source, defaults, settings, folder, run_id):
                 result['pages'].append({'url':final_url,'kind':entry['kind'],'content_type':ctype,'retrieved_at':now(),'items':len(content)})
                 if 'html' in ctype:
                     result['article_records'].append(article_metadata(body,final_url))
-                    queue.extend(discover(body,final_url,settings))
+                    if not lightweight:
+                        queue.extend(discover(body,final_url,settings))
                 elif any(x in ctype for x in ('rss','atom','xml')):
                     articles=feed_links(body,final_url)
                     result['article_records'].extend(articles)
-                    if settings.get('follow_details'):
+                    if settings.get('follow_details') and not lightweight:
                         queue.extend({'url':a['url'],'kind':'article'} for a in articles)
             except Exception as exc:
                 result['acquisition_errors'].append({'url':url,'stage':'fetch_parse','error':type(exc).__name__})
@@ -189,7 +191,7 @@ def collect(source, defaults, settings, folder, run_id):
             except Exception as exc:
                 result['acquisition_errors'].append({'stage':'wms','error':type(exc).__name__})
         from .mapviews import capture_views
-        views = capture_views(source['rule_id'], folder, settings, settings.get('_root', '.'))
+        views = [] if lightweight else capture_views(source['rule_id'], folder, settings, settings.get('_root', '.'))
         if views:
             result['map_views'] = views
             for view in views:

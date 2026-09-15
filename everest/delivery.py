@@ -38,17 +38,45 @@ def destination(config):
     return fingerprint({'serverchan': key}) if key else ''
 
 
-def upload(path, settings):
+def _upload_uguu(path, settings):
     with Path(path).open('rb') as f:
-        response = requests.post(settings['image_upload_url'], files={'files[]': (Path(path).name, f, 'image/png')}, timeout=45)
+        response = requests.post(settings['image_upload_url'],
+                                 files={'files[]': (Path(path).name, f, 'image/png')}, timeout=45)
     response.raise_for_status()
     data = response.json()
     if not data.get('success') or not data.get('files'):
         raise ValueError('Image upload rejected')
-    url = data['files'][0]['url']
-    if not url.startswith('https://'):
-        raise ValueError('Image URL must be HTTPS')
-    return url
+    return data['files'][0]['url']
+
+
+def _upload_tmpfiles(path, settings):
+    with Path(path).open('rb') as f:
+        response = requests.post(settings['image_upload_fallback'],
+                                 files={'file': (Path(path).name, f, 'image/png')}, timeout=45)
+    response.raise_for_status()
+    data = response.json()
+    url = (data.get('data') or {}).get('url', '')
+    if not url:
+        raise ValueError('Fallback image upload rejected')
+    return url.replace('tmpfiles.org/', 'tmpfiles.org/dl/')
+
+
+def upload(path, settings):
+    """Try the primary image host, then the fallback. Public HTTPS URL required."""
+    hosts = [(_upload_uguu, settings.get('image_upload_url')),
+             (_upload_tmpfiles, settings.get('image_upload_fallback'))]
+    errors = []
+    for func, url in hosts:
+        if not url:
+            continue
+        try:
+            result = func(path, settings)
+            if not result.startswith('https://'):
+                raise ValueError('Image URL must be HTTPS')
+            return result
+        except Exception as exc:
+            errors.append(type(exc).__name__)
+    raise ValueError('All image hosts failed: ' + ', '.join(errors))
 
 
 def send(config, title, text):
@@ -94,18 +122,18 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         if record.get('image_kind') == 'everest_map_view':
             items = record.get('map_view_items') or []
             if items and len(items) == len(urls):
-                chinese_layers = [it.get('name') or LAYER_NAMES.get(it['layer'], it['layer']) for it in items]
-                text += f"珠峰视角图层（共{len(items)}层）：{'、'.join(chinese_layers)}\n\n"
-                for i, (it, url) in enumerate(zip(items, urls), 1):
-                    layer_title = it.get('name') or LAYER_NAMES.get(it['layer'], it['layer'])
-                    text += f"### 图层 {i}：{layer_title}\n![{layer_title}]({url})\n\n"
+                names = [it.get('name') or LAYER_NAMES.get(it['layer'], it['layer']) for it in items]
+                text += f"珠峰视角图层（共{len(items)}层）：{'、'.join(names)}\n\n"
+                for it, url in zip(items, urls):
+                    name = it.get('name') or LAYER_NAMES.get(it['layer'], it['layer'])
+                    text += f"{name}\n![{name}]({url})\n\n"
             else:
-                raw_layers = record.get('map_view_layers') or []
-                chinese_layers = [LAYER_NAMES.get(l, l) for l in raw_layers]
-                text += f"珠峰视角图层：{'、'.join(chinese_layers)}\n\n"
-                for i, url in enumerate(urls, 1):
-                    layer_title = chinese_layers[i-1] if i-1 < len(chinese_layers) else f"图层 {i}"
-                    text += f"### 图层 {i}：{layer_title}\n![{layer_title}]({url})\n\n"
+                raw = record.get('map_view_layers') or []
+                names = [LAYER_NAMES.get(l, l) for l in raw]
+                text += f"珠峰视角图层：{'、'.join(names)}\n\n"
+                for i, url in enumerate(urls):
+                    name = names[i] if i < len(names) else f"图层 {i+1}"
+                    text += f"{name}\n![{name}]({url})\n\n"
         elif record.get('image_kind') == 'translated_source_screenshot':
             label = '中文网页截图（机器翻译）'
             text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls)) + '\n\n'

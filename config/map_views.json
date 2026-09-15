@@ -1,10 +1,23 @@
 {
   "schema_version": 1,
   "everest": {
-    "center": [27.988, 86.925],
-    "bbox": [85.2, 26.8, 88.8, 29.2],
+    "center": [
+      27.988,
+      86.925
+    ],
+    "bbox": [
+      85.2,
+      26.8,
+      88.8,
+      29.2
+    ],
     "zoom": 9,
-    "zoom_max_massif_bbox": [86.7, 27.8, 87.15, 28.15],
+    "zoom_max_massif_bbox": [
+      86.7,
+      27.8,
+      87.15,
+      28.15
+    ],
     "note": "珠峰高精度视角及独立图层直达配置"
   },
   "views": {
@@ -84,31 +97,54 @@
       "label": "Windy (珠峰定位图层)",
       "translate": false,
       "views": [
-        {"layer": "wind", "name": "珠峰风力图层", "url": "https://www.windy.com/?27.988,86.925,11,wind", "verified": true},
-        {"layer": "rain", "name": "珠峰降雨/对流图层", "url": "https://www.windy.com/?27.988,86.925,11,rain", "verified": true},
-        {"layer": "temp", "name": "珠峰气温图层", "url": "https://www.windy.com/?27.988,86.925,11,temp", "verified": true},
-        {"layer": "clouds", "name": "珠峰云量图层", "url": "https://www.windy.com/?27.988,86.925,11,clouds", "verified": true}
+        {
+          "layer": "wind",
+          "name": "珠峰风力图层",
+          "url": "https://www.windy.com/?27.988,86.925,11,wind",
+          "verified": true
+        },
+        {
+          "layer": "rain",
+          "name": "珠峰降雨/对流图层",
+          "url": "https://www.windy.com/?27.988,86.925,11,rain",
+          "verified": true
+        },
+        {
+          "layer": "temp",
+          "name": "珠峰气温图层",
+          "url": "https://www.windy.com/?27.988,86.925,11,temp",
+          "verified": true
+        },
+        {
+          "layer": "clouds",
+          "name": "珠峰云量图层",
+          "url": "https://www.windy.com/?27.988,86.925,11,clouds",
+          "verified": true
+        }
       ]
     },
     "weather-07": {
       "label": "Ventusky (珠峰气象地图)",
       "translate": false,
       "views": [
-        {"layer": "default", "name": "珠峰全要素地图", "url": "https://www.ventusky.com/?p=27.99;86.93;10", "verified": true}
+        {
+          "layer": "default",
+          "name": "珠峰全要素地图",
+          "url": "https://www.ventusky.com/?p=27.99;86.93;10",
+          "verified": true
+        }
       ]
     },
     "flood-02": {
       "label": "GloFAS 洪水 (喜马拉雅河网)",
       "translate": false,
       "views": [
-        {"layer": "flood_forecast", "name": "全球洪水预警地图查看器", "url": "https://global-flood.emergency.copernicus.eu/map-viewer/", "verified": true}
-      ]
-    },
-    "flood-03": {
-      "label": "Global Floods",
-      "translate": false,
-      "views": [
-        {"layer": "flood_forecast", "name": "GloFAS 门户地图", "url": "https://www.globalfloods.eu/map-viewer/", "verified": true}
+        {
+          "layer": "flood_forecast",
+          "name": "全球洪水预警地图查看器",
+          "url": "https://global-flood.emergency.copernicus.eu/map-viewer/",
+          "verified": true
+        }
       ]
     },
     "flood-05": {
@@ -133,14 +169,24 @@
       "label": "尼泊尔 BIPAD 灾害门户",
       "translate": false,
       "views": [
-        {"layer": "hazards", "name": "国家灾害综合地图", "url": "https://bipadportal.gov.np/", "verified": true}
+        {
+          "layer": "hazards",
+          "name": "国家灾害综合地图",
+          "url": "https://bipadportal.gov.np/",
+          "verified": true
+        }
       ]
     },
     "news-10": {
       "label": "Windy 网络摄像头 (珠峰区域)",
       "translate": false,
       "views": [
-        {"layer": "webcams", "name": "昆布/珠峰实时摄像头", "url": "https://www.windy.com/-Webcams/webcams?27.988,86.925,10", "verified": true}
+        {
+          "layer": "webcams",
+          "name": "昆布/珠峰实时摄像头",
+          "url": "https://www.windy.com/-Webcams/webcams?27.988,86.925,10",
+          "verified": true
+        }
       ]
     }
   },

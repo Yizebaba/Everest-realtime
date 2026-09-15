@@ -13,14 +13,26 @@
   "follow_pagination": true,
   "discover_feeds": true,
   "discover_search": true,
-  "search_terms": ["Everest", "Himalaya", "glacier", "喜马拉雅山", "冰川"],
+  "search_terms": [
+    "Everest",
+    "Himalaya",
+    "glacier",
+    "喜马拉雅山",
+    "冰川"
+  ],
   "max_pages_per_source": 6,
   "max_network_records": 30,
   "max_map_assets": 4,
   "translate_screenshots": true,
   "translation_settle_ms": 3000,
-  "translation_source_languages": {"earthquake-06": "ne", "special-02": "ne"},
+  "translation_source_languages": {
+    "earthquake-06": "ne",
+    "special-02": "ne"
+  },
   "original_screenshot_urls": {
     "special-01": "https://weather.cma.cn/web/alarm.html"
-  }
+  },
+  "image_upload_fallback": "https://tmpfiles.org/api/v1/upload",
+  "fast_tick_seconds": 3,
+  "translation_timeout_ms": 30000
 }
