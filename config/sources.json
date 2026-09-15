@@ -267,7 +267,8 @@
       "nature": "forecast",
       "url": "https://www.dhm.gov.np/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -280,7 +281,8 @@
       "url": "https://www.cma.gov.cn/",
       "enabled": true,
       "interval_minutes": 60,
-      "note": "该站 WAF 会拦截自动化访问，需人工确认；不伪装为成功"
+      "note": "该站 WAF 会拦截自动化访问，需人工确认；不伪装为成功",
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -292,7 +294,8 @@
       "nature": "forecast",
       "url": "http://www.nmc.cn/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -305,7 +308,8 @@
       "url": "https://www.weather.com.cn/",
       "enabled": true,
       "interval_minutes": 60,
-      "note": "该站对自动化访问返回 403，需人工确认；不伪装为成功"
+      "note": "该站对自动化访问返回 403，需人工确认；不伪装为成功",
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -318,7 +322,8 @@
       "url": "https://mausam.imd.gov.in/",
       "note": "证书链不全, 监控用宽松校验",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -330,7 +335,8 @@
       "nature": "forecast",
       "url": "https://www.windy.com/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -342,7 +348,8 @@
       "nature": "forecast",
       "url": "https://www.ventusky.com/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -355,7 +362,8 @@
       "url": "https://www.mountain-forecast.com/peaks/Mount-Everest",
       "cadence_min": 360,
       "enabled": true,
-      "interval_minutes": 360
+      "interval_minutes": 360,
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -368,7 +376,8 @@
       "url": "https://www.meteoblue.com/en/weather/week/27.988N86.925E",
       "enabled": true,
       "interval_minutes": 60,
-      "note": "按珠峰坐标 27.988N/86.925E 定位（海拔约8794m），非默认城市页"
+      "note": "按珠峰坐标 27.988N/86.925E 定位（海拔约8794m），非默认城市页",
+      "max_pages": 1
     },
     {
       "category": "气象",
@@ -382,7 +391,8 @@
       "cadence_min": 60,
       "enabled": true,
       "interval_minutes": 60,
-      "note": "按珠峰坐标 27.9881N/86.925E、海拔8849m 定位，非默认首页"
+      "note": "按珠峰坐标 27.9881N/86.925E、海拔8849m 定位，非默认首页",
+      "max_pages": 1
     },
     {
       "category": "水文洪水",

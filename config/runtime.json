@@ -1,5 +1,5 @@
 {
-  "workers": 4,
+  "workers": 3,
   "timeout_seconds": 25,
   "max_response_bytes": 5000000,
   "screenshots": true,
@@ -34,10 +34,11 @@
   },
   "image_upload_fallback": "https://tmpfiles.org/api/v1/upload",
   "fast_tick_seconds": 3,
-  "translation_timeout_ms": 30000,
+  "translation_timeout_ms": 40000,
   "hide_ads": true,
   "hide_chrome": true,
   "hide_sticky_overlays": true,
   "lazy_scroll_steps": 4,
-  "lazy_scroll_wait_ms": 700
+  "lazy_scroll_wait_ms": 700,
+  "max_translated_pages": 3
 }

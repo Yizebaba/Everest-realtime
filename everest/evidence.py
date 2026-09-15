@@ -103,19 +103,20 @@ def make_cards(result, folder, settings):
             return result
     result['original_screenshots'] = [str(path) for path in sources]
     result['translations'] = []
+    result['translation_errors'] = []
     if settings.get('translate_screenshots', False):
         from .translation import chinese_screenshot
+        max_pages = int(settings.get('max_translated_pages', 3))
         translated=[]
-        for i, source in enumerate(sources):
+        for i, source in enumerate(sources[:max_pages]):
             info_path=source.parent/'screenshot-info.json'
             if info_path.exists():
                 url=read_json(info_path)['source_url']
             elif source.parent==folder:
                 url=override or result['source']['url']
             else:
-                # Never label a reloaded homepage as a translated detail page.
-                result['screenshot_error']='Original detail screenshot has no source URL'
-                return result
+                result['translation_errors'].append('detail screenshot has no source URL')
+                continue
             target=folder/f'chinese-page-{i+1:02d}.png'
             try:
                 language=settings.get('translation_source_languages',{}).get(result['source']['rule_id'],'auto')
@@ -123,10 +124,22 @@ def make_cards(result, folder, settings):
                 result['translations'].append(info)
                 translated.append(target)
             except Exception as exc:
-                result['screenshot_error']='Chinese translation screenshot failed: '+type(exc).__name__
-                return result
-        sources=translated
-        result['image_kind']='translated_source_screenshot'
+                # One page failing must not discard the pages that did translate.
+                result['translation_errors'].append(f"{type(exc).__name__}: {str(exc)[:80]}")
+                continue
+        if translated:
+            sources=translated
+            result['image_kind']='translated_source_screenshot'
+        elif sources and settings.get('fallback_to_original_on_translation_failure', True):
+            # Translation is unavailable (JS-only page, map canvas, blocked widget).
+            # Send the real original screenshot and say so, instead of nothing.
+            result['image_kind']='original_screenshot'
+            detail = result['translation_errors'][0] if result['translation_errors'] else 'unknown'
+            result['screenshot_error'] = 'Chinese translation unavailable, sent original page: '+detail
+        else:
+            result['screenshot_error']='Chinese translation failed for all pages: '+(
+                result['translation_errors'][0] if result['translation_errors'] else 'unknown')
+            return result
     for source in sources:
         with Image.open(source) as raw_image:
             image = _trim_bottom_blank(raw_image.convert('RGB'))

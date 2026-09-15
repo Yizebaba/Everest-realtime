@@ -49,4 +49,6 @@ def test_translation_failure_not_mislabelled_chinese(monkeypatch,tmp_path):
     Image.new('RGB',(40,40),'red').save(tmp_path/'page.png')
     record={'source':{'url':'https://example.test','rule_id':'one'},'screenshot':{'captured_at':'2026-09-15T00:00:00Z'}}
     make_cards(record,tmp_path,{'translate_screenshots':True,'screenshots':False})
-    assert record['cards']==[] and 'failed' in record['screenshot_error']
+    # Falls back to the original page; never labelled as Chinese.
+    assert record['image_kind']=='original_screenshot'
+    assert 'translation unavailable' in record['screenshot_error']

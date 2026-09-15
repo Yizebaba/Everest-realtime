@@ -33,6 +33,7 @@ HIDE_JS = """(selectors) => {
         try { nodes = document.querySelectorAll(sel); } catch (e) { continue; }
         for (const el of nodes) {
             try {
+                if (!el || !el.style) continue;
                 const r = el.getBoundingClientRect();
                 if (r.width === 0 && r.height === 0) continue;
                 el.style.setProperty('display', 'none', 'important');
@@ -64,6 +65,7 @@ def clean_page(page, settings):
                 let hidden = 0;
                 for (const el of document.querySelectorAll('body *')) {
                     try {
+                        if (!el || !el.style) continue;
                         const cs = getComputedStyle(el);
                         if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
                         const r = el.getBoundingClientRect();
@@ -85,6 +87,7 @@ def clean_page(page, settings):
                 let hidden = 0;
                 for (const el of document.querySelectorAll('div, section, footer, p, ul')) {
                     try {
+                        if (!el || !el.style) continue;
                         const t = (el.innerText || '').trim();
                         if (!t || t.length > 220) continue;
                         if (el.children.length > 10) continue;

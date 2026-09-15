@@ -76,32 +76,47 @@ def _inject_translate_widget(page, target='zh-CN'):
 def _cleanup_translation_artifacts(page):
     """Remove Google toolbar/banner and undo its body offset so the page is clean."""
     page.evaluate("""() => {
-        for (const sel of ['.VIpgJd-ZVi9od-OR9QNe-OZyPf', 'iframe.goog-te-banner-frame',
-                           '.goog-te-banner-frame', '#everest_gt_slot', '.skiptranslate']) {
-            for (const el of document.querySelectorAll(sel)) {
-                if (el.id === 'everest_gt_slot' || el.tagName === 'IFRAME' || el.classList.contains('VIpgJd-ZVi9od-OR9QNe-OZyPf')) {
+        const drop = ['.VIpgJd-ZVi9od-OR9QNe-OZyPf', 'iframe.goog-te-banner-frame',
+                      '.goog-te-banner-frame', '#everest_gt_slot', '.skiptranslate'];
+        for (const sel of drop) {
+            let nodes = [];
+            try { nodes = document.querySelectorAll(sel); } catch (e) { continue; }
+            for (const el of nodes) {
+                try {
+                    if (!el || !el.style) continue;
                     el.style.display = 'none';
                     if (el.parentNode && el.tagName !== 'SCRIPT') el.remove();
-                }
+                } catch (e) { /* ignore */ }
             }
         }
-        document.body.style.top = '0px';
-        document.body.style.position = 'static';
-        document.body.style.height = 'auto';
-        document.body.style.minHeight = 'auto';
-        document.documentElement.style.height = 'auto';
-        for (const el of document.querySelectorAll('#mapblock, #maparea, .map-container, #map')) {
-            if (!el.innerText.trim() && !el.querySelector('canvas') && !el.querySelector('img')) {
-                el.style.display = 'none';
+        try {
+            document.body.style.top = '0px';
+            document.body.style.position = 'static';
+            document.body.style.height = 'auto';
+            document.body.style.minHeight = 'auto';
+            document.documentElement.style.height = 'auto';
+        } catch (e) { /* ignore */ }
+        for (const sel of ['#mapblock', '#maparea', '.map-container', '#map']) {
+            let nodes = [];
+            try { nodes = document.querySelectorAll(sel); } catch (e) { continue; }
+            for (const el of nodes) {
+                try {
+                    if (!el || !el.style) continue;
+                    if (!el.innerText.trim() && !el.querySelector('canvas') && !el.querySelector('img')) {
+                        el.style.display = 'none';
+                    }
+                } catch (e) { /* ignore */ }
             }
         }
-        const wrapper = document.querySelector('.wrapper');
-        if (wrapper) {
-            wrapper.style.position = 'static';
-            wrapper.style.overflow = 'visible';
-            wrapper.style.height = 'auto';
-            wrapper.style.minHeight = 'auto';
-        }
+        try {
+            const wrapper = document.querySelector('.wrapper');
+            if (wrapper && wrapper.style) {
+                wrapper.style.position = 'static';
+                wrapper.style.overflow = 'visible';
+                wrapper.style.height = 'auto';
+                wrapper.style.minHeight = 'auto';
+            }
+        } catch (e) { /* ignore */ }
     }""")
 
 
