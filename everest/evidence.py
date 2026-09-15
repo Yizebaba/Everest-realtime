@@ -60,10 +60,17 @@ def make_cards(result, folder, settings):
     if map_views:
         captured = [view for view in map_views if view.get('image') and not view.get('error')]
         if captured:
+            result['map_view_items'] = []
             for view in captured:
                 target = folder / f"mapview-{view['layer']}.png"
                 shutil.copyfile(view['image'], target)
                 result['cards'].append(str(target))
+                result['map_view_items'].append({
+                    'path': str(target),
+                    'layer': view['layer'],
+                    'name': view.get('layer_name', view['layer']),
+                    'url': view.get('view_url', '')
+                })
             result['image_kind'] = 'everest_map_view'
             result['map_view_layers'] = [view['layer'] for view in captured]
             return result

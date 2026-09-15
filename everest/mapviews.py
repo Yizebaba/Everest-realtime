@@ -80,7 +80,8 @@ def capture_views(rule_id, folder, settings, root):
         try:
             for index, view in enumerate(entry['views'], 1):
                 page = browser.new_page(viewport={'width': 1280, 'height': 900}, locale='zh-CN')
-                record = {'layer': view['layer'], 'view_url': view['url'], 'verified': view.get('verified', False),
+                record = {'layer': view['layer'], 'layer_name': view.get('name', view['layer']),
+                          'view_url': view['url'], 'verified': view.get('verified', False),
                           'everest_center': config.get('everest', {}).get('center'),
                           'captured_at': now(), 'image': None, 'error': ''}
                 try:

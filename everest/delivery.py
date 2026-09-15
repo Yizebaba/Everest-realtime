@@ -10,6 +10,28 @@ from .core import fingerprint, read_json
 
 SIGNATURE = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
 
+LAYER_NAMES = {
+    'wind': '风力图层',
+    'rain': '降水/对流图层',
+    'temp': '气温图层',
+    'clouds': '云量图层',
+    'default': '全要素底图',
+    'true_color': '真彩色遥感底图',
+    'true_color_modis': 'MODIS Terra 真彩色遥感底图',
+    'snow_cover_ndsi': 'MODIS 积雪覆盖与冰川反射 (NDSI)',
+    'surface_temp_day': '白天地表与冰面温度 (LST Day)',
+    'surface_temp_night': '夜间地表与冰面温度 (LST Night)',
+    'viirs_hires_truecolor': 'Suomi NPP / VIIRS 高清真彩',
+    'fires_thermal_375m': 'NOAA-20 VIIRS 375米热异常/火点',
+    'active_fires_24h': '珠峰24小时热异常检测',
+    'geocolor': '全盘真彩云图',
+    'webcams': '实时网络摄像头',
+    'flood_forecast': '洪水预报/预警地图',
+    'global_overview': '全球河流洪涝概览',
+    'disaster_spot': '洪水灾害点放大直达',
+    'hazards': '国家综合灾害地图'
+}
+
 
 def destination(config):
     key = (config.get('serverchan') or {}).get('sendkey')
@@ -70,15 +92,27 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         source_url = record.get('original_capture', {}).get('final_url') or source['url']
         text = f"来源：{source_url}\n\n"
         if record.get('image_kind') == 'everest_map_view':
-            layers = '、'.join(record.get('map_view_layers') or [])
-            text += f"珠峰视角图层：{layers}\n\n"
-            label = '珠峰地图截图'
+            items = record.get('map_view_items') or []
+            if items and len(items) == len(urls):
+                chinese_layers = [it.get('name') or LAYER_NAMES.get(it['layer'], it['layer']) for it in items]
+                text += f"珠峰视角图层（共{len(items)}层）：{'、'.join(chinese_layers)}\n\n"
+                for i, (it, url) in enumerate(zip(items, urls), 1):
+                    layer_title = it.get('name') or LAYER_NAMES.get(it['layer'], it['layer'])
+                    text += f"### 图层 {i}：{layer_title}\n![{layer_title}]({url})\n\n"
+            else:
+                raw_layers = record.get('map_view_layers') or []
+                chinese_layers = [LAYER_NAMES.get(l, l) for l in raw_layers]
+                text += f"珠峰视角图层：{'、'.join(chinese_layers)}\n\n"
+                for i, url in enumerate(urls, 1):
+                    layer_title = chinese_layers[i-1] if i-1 < len(chinese_layers) else f"图层 {i}"
+                    text += f"### 图层 {i}：{layer_title}\n![{layer_title}]({url})\n\n"
         elif record.get('image_kind') == 'translated_source_screenshot':
             label = '中文网页截图（机器翻译）'
+            text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls)) + '\n\n'
         else:
             label = '原文截图'
-        text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls))
-        text += '\n\n'+SIGNATURE
+            text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls)) + '\n\n'
+        text += SIGNATURE
         store.update_notice(key, 'sending')
         try:
             receipt = sender(config, '珠峰监控 · '+source['name'], text)
