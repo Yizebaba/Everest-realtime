@@ -279,7 +279,8 @@
       "nature": "forecast",
       "url": "https://www.cma.gov.cn/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "note": "该站 WAF 会拦截自动化访问，需人工确认；不伪装为成功"
     },
     {
       "category": "气象",
@@ -303,7 +304,8 @@
       "nature": "forecast",
       "url": "https://www.weather.com.cn/",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "note": "该站对自动化访问返回 403，需人工确认；不伪装为成功"
     },
     {
       "category": "气象",
@@ -358,27 +360,29 @@
     {
       "category": "气象",
       "category_id": "weather",
-      "name": "meteoblue",
+      "name": "meteoblue 珠峰峰顶天气",
       "rule_id": "weather-09",
       "source_id": "weather-09",
       "source_tier": "core",
       "nature": "forecast",
-      "url": "https://www.meteoblue.com/",
+      "url": "https://www.meteoblue.com/en/weather/week/27.988N86.925E",
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "note": "按珠峰坐标 27.988N/86.925E 定位（海拔约8794m），非默认城市页"
     },
     {
       "category": "气象",
       "category_id": "weather",
-      "name": "Open-Meteo",
+      "name": "Open-Meteo 珠峰坐标预报",
       "rule_id": "weather-10",
       "source_id": "weather-10",
       "source_tier": "core",
       "nature": "forecast",
-      "url": "https://open-meteo.com/",
+      "url": "https://open-meteo.com/en/docs?latitude=27.9881&longitude=86.925&elevation=8849",
       "cadence_min": 60,
       "enabled": true,
-      "interval_minutes": 60
+      "interval_minutes": 60,
+      "note": "按珠峰坐标 27.9881N/86.925E、海拔8849m 定位，非默认首页"
     },
     {
       "category": "水文洪水",

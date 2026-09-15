@@ -6,6 +6,8 @@ from pathlib import Path
 from PIL import Image
 
 from .core import now, read_json
+from .clean import clean_page
+from .translation import dismiss_gates
 
 
 BLOCK_PAGES = ('您的请求可能存在威胁', '请求已被阻断', 'WEB 应用防火墙', 'Just a moment...')
@@ -27,8 +29,11 @@ def screenshot(url, path, settings):
             text = page.title()+'\n'+page.locator('body').inner_text()
             if any(marker in text for marker in BLOCK_PAGES):
                 raise ValueError('Source page blocked; original screenshot unavailable')
+            dismiss_gates(page)
+            cleaned = clean_page(page, settings)
+            page.wait_for_timeout(600)
             page.screenshot(path=str(path), full_page=True, timeout=15000)
-            return {'captured_at':now(),'final_url':page.url}
+            return {'captured_at':now(),'final_url':page.url,'cleaned':cleaned}
         finally:
             browser.close()
 

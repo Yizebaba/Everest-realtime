@@ -8,6 +8,7 @@ import re
 from urllib.parse import urlsplit
 
 from .core import now
+from .clean import clean_page
 
 # Modal gates that cover content until dismissed.
 DISMISS_TEXTS = (
@@ -142,8 +143,18 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             except Exception:
                 pass
             page.wait_for_timeout(settings.get('translation_settle_ms', 3000))
+            # Trigger lazy-loaded charts/maps so the screenshot is not full of spinners.
+            try:
+                for _ in range(settings.get('lazy_scroll_steps', 4)):
+                    page.mouse.wheel(0, 900)
+                    page.wait_for_timeout(settings.get('lazy_scroll_wait_ms', 700))
+                page.evaluate('window.scrollTo(0, 0)')
+                page.wait_for_timeout(1200)
+            except Exception:
+                pass
             dismissed += dismiss_gates(page, rounds=2)
             _cleanup_translation_artifacts(page)
+            clean_report = clean_page(page, settings)
             page.wait_for_timeout(800)
             body = page.locator('body').inner_text()
             if any(marker in body for marker in BLOCK_PAGES):
@@ -154,6 +165,7 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             page.screenshot(path=str(path), full_page=True, timeout=20000)
             return {'provider': 'Google Translate website widget (in-place)', 'source_url': url,
                     'target_language': 'zh-CN', 'captured_at': now(), 'machine_translation': True,
-                    'dismissed': dismissed, 'chinese_characters': chinese, 'title': page.title()}
+                    'dismissed': dismissed, 'cleaned': clean_report,
+                    'chinese_characters': chinese, 'title': page.title()}
         finally:
             browser.close()

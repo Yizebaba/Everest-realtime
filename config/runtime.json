@@ -34,5 +34,10 @@
   },
   "image_upload_fallback": "https://tmpfiles.org/api/v1/upload",
   "fast_tick_seconds": 3,
-  "translation_timeout_ms": 30000
+  "translation_timeout_ms": 30000,
+  "hide_ads": true,
+  "hide_chrome": true,
+  "hide_sticky_overlays": true,
+  "lazy_scroll_steps": 4,
+  "lazy_scroll_wait_ms": 700
 }
