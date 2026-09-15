@@ -33,6 +33,24 @@ def screenshot(url, path, settings):
             browser.close()
 
 
+def _trim_bottom_blank(img, sample_threshold=235):
+    """Trim bottom uniform/blank rows without altering real page content."""
+    w, h = img.size
+    cutoff = h
+    step = 5
+    for y in range(h - step, 300, -step):
+        pixels = [img.getpixel((x, y)) for x in range(0, w, max(1, w // 25))]
+        first = pixels[0]
+        is_blank = all(abs(p[0] - first[0]) < 5 and abs(p[1] - first[1]) < 5 and abs(p[2] - first[2]) < 5 for p in pixels)
+        is_light = (first[0] >= sample_threshold and first[1] >= sample_threshold and first[2] >= sample_threshold)
+        if not (is_blank and is_light):
+            cutoff = min(h, y + step + 10)
+            break
+    if cutoff < h:
+        return img.crop((0, 0, w, cutoff))
+    return img
+
+
 def make_cards(result, folder, settings):
     """Keep the existing cards transport field, but fill it only with original page pixels."""
     result['cards'] = []
@@ -98,14 +116,14 @@ def make_cards(result, folder, settings):
         sources=translated
         result['image_kind']='translated_source_screenshot'
     for source in sources:
-        with Image.open(source) as image:
-            image.load()
+        with Image.open(source) as raw_image:
+            image = _trim_bottom_blank(raw_image.convert('RGB'))
             # Split tall pages losslessly for image channels; no scaling, markup or text overlays.
             for top in range(0,image.height,12000):
                 prefix='chinese' if result['image_kind']=='translated_source_screenshot' else 'original'
                 target=folder/f'{prefix}-{len(result["cards"])+1:02d}.png'
                 if image.height<=12000:
-                    shutil.copyfile(source,target)
+                    image.save(target)
                 else:
                     image.crop((0,top,image.width,min(top+12000,image.height))).save(target)
                 result['cards'].append(str(target))

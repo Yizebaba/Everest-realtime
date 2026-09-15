@@ -27,6 +27,32 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             page.wait_for_function("""() => location.hostname.endsWith('.translate.goog') &&
                 (document.body.innerText.match(/[\\u3400-\\u9fff]/g)||[]).length >= 20""",timeout=30000)
             page.wait_for_timeout(settings.get('translation_settle_ms',3000))
+            # Clean up Google Translate toolbar, banners, and collapse empty dynamic containers (e.g. broken map canvases in iframe)
+            page.evaluate("""() => {
+                const topBar = document.querySelector('.VIpgJd-ZVi9od-OR9QNe-OZyPf');
+                if (topBar) topBar.remove();
+                const banner = document.querySelector('iframe.goog-te-banner-frame');
+                if (banner) banner.remove();
+                document.body.style.top = '0px';
+                document.body.style.position = 'static';
+                document.body.style.height = 'auto';
+                document.documentElement.style.height = 'auto';
+                
+                // If a map/canvas block inside the translated frame failed to load, collapse it to avoid 500px blank gap
+                for (const el of document.querySelectorAll('#mapblock, #maparea, .map-container, #map')) {
+                    if (!el.innerText.trim() && !el.querySelector('canvas') && !el.querySelector('img')) {
+                        el.style.display = 'none';
+                    }
+                }
+                const wrapper = document.querySelector('.wrapper');
+                if (wrapper) {
+                    wrapper.style.position = 'static';
+                    wrapper.style.overflow = 'visible';
+                    wrapper.style.height = 'auto';
+                    wrapper.style.minHeight = 'auto';
+                }
+            }""")
+            page.wait_for_timeout(1000)
             body=page.locator('body').inner_text()
             if any(x in body for x in ('您的请求可能存在威胁','请求已被阻断','WEB 应用防火墙')):
                 raise ValueError('Translated source is a blocked page')

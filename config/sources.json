@@ -184,15 +184,16 @@
     {
       "category": "地震",
       "category_id": "earthquake",
-      "name": "GEOFON 全球地震台网",
+      "name": "GEOFON 全球地震列表",
       "rule_id": "earthquake-05",
       "source_id": "earthquake-05",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://geofon.gfz-potsdam.de/",
+      "url": "https://geofon.gfz.de/eqinfo/list.php",
       "cadence_min": 15,
       "enabled": true,
-      "interval_minutes": 15
+      "interval_minutes": 15,
+      "note": "直达地震事件列表表格页面"
     },
     {
       "category": "地震",
