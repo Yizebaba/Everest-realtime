@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from .core import now
+from .core import now, read_json
 
 
 BLOCK_PAGES = ('您的请求可能存在威胁', '请求已被阻断', 'WEB 应用防火墙', 'Just a moment...')
@@ -58,12 +58,39 @@ def make_cards(result, folder, settings):
         except Exception as exc:
             result['screenshot_error'] = str(exc) if isinstance(exc,ValueError) else type(exc).__name__
             return result
+    result['original_screenshots'] = [str(path) for path in sources]
+    result['translations'] = []
+    if settings.get('translate_screenshots', False):
+        from .translation import chinese_screenshot
+        translated=[]
+        for i, source in enumerate(sources):
+            info_path=source.parent/'screenshot-info.json'
+            if info_path.exists():
+                url=read_json(info_path)['source_url']
+            elif source.parent==folder:
+                url=override or result['source']['url']
+            else:
+                # Never label a reloaded homepage as a translated detail page.
+                result['screenshot_error']='Original detail screenshot has no source URL'
+                return result
+            target=folder/f'chinese-page-{i+1:02d}.png'
+            try:
+                language=settings.get('translation_source_languages',{}).get(result['source']['rule_id'],'auto')
+                info=chinese_screenshot(url,target,settings,language)
+                result['translations'].append(info)
+                translated.append(target)
+            except Exception as exc:
+                result['screenshot_error']='Chinese translation screenshot failed: '+type(exc).__name__
+                return result
+        sources=translated
+        result['image_kind']='translated_source_screenshot'
     for source in sources:
         with Image.open(source) as image:
             image.load()
             # Split tall pages losslessly for image channels; no scaling, markup or text overlays.
             for top in range(0,image.height,12000):
-                target=folder/f'original-{len(result["cards"])+1:02d}.png'
+                prefix='chinese' if result['image_kind']=='translated_source_screenshot' else 'original'
+                target=folder/f'{prefix}-{len(result["cards"])+1:02d}.png'
                 if image.height<=12000:
                     shutil.copyfile(source,target)
                 else:

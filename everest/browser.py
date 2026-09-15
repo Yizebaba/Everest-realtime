@@ -3,7 +3,7 @@ import hashlib
 import json
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
-from .core import now
+from .core import now, write_json
 
 
 def public_url(url):
@@ -37,6 +37,7 @@ def render(url, folder, settings, capture_map=False):
             dom = page.content()
             (folder/'rendered.html').write_text(dom, encoding='utf-8')
             page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
+            write_json(folder/'screenshot-info.json',{'source_url':url,'final_url':public_url(page.url),'captured_at':now()})
             network=[]; images=[]; records=[]
             for r in responses:
                 ctype=r.headers.get('content-type','')

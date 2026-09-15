@@ -17,6 +17,9 @@
   "max_pages_per_source": 6,
   "max_network_records": 30,
   "max_map_assets": 4,
+  "translate_screenshots": true,
+  "translation_settle_ms": 3000,
+  "translation_source_languages": {"earthquake-06": "ne", "special-02": "ne"},
   "original_screenshot_urls": {
     "special-01": "https://weather.cma.cn/web/alarm.html"
   }
