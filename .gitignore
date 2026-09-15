@@ -1,0 +1,9 @@
+config/notify.local.json
+data/
+data-docker/
+*.log
+.env
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/

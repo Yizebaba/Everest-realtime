@@ -1,0 +1,20 @@
+{
+  "workers": 4,
+  "timeout_seconds": 25,
+  "max_response_bytes": 5000000,
+  "screenshots": true,
+  "browser_channel": "chrome",
+  "browser_wait_ms": 2500,
+  "font": "C:/Windows/Fonts/msyh.ttc",
+  "notification_interval_seconds": 3,
+  "image_upload_url": "https://uguu.se/upload.php",
+  "render_html": true,
+  "follow_details": true,
+  "follow_pagination": true,
+  "discover_feeds": true,
+  "discover_search": true,
+  "search_terms": ["Everest", "Himalaya", "glacier", "喜马拉雅山", "冰川"],
+  "max_pages_per_source": 6,
+  "max_network_records": 30,
+  "max_map_assets": 4
+}

@@ -1,0 +1,23 @@
+services:
+  monitor:
+    build: .
+    image: everest-realtime:local
+    init: true
+    ipc: host
+    security_opt:
+      - seccomp=./config/seccomp_profile.json
+    volumes:
+      - ./data-docker:/app/data
+      - ./config/sources.json:/app/config/sources.json:ro
+      - ./config/runtime.json:/app/config/runtime.json:ro
+    secrets:
+      - notify_config
+    environment:
+      HTTP_PROXY: ${EVEREST_DOCKER_PROXY:-}
+      HTTPS_PROXY: ${EVEREST_DOCKER_PROXY:-}
+      NO_PROXY: localhost,127.0.0.1
+    entrypoint: ["python", "-B", "worker.py"]
+    restart: unless-stopped
+secrets:
+  notify_config:
+    file: ./config/notify.local.json

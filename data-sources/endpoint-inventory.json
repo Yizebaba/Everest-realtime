@@ -1,0 +1,403 @@
+[
+  {
+    "file": "daily_report.py",
+    "line": 23,
+    "urls": [
+      "https://himawari8.nict.go.jp/"
+    ],
+    "source_line": "HIMAWARI = \"https://himawari8.nict.go.jp/\""
+  },
+  {
+    "file": "everest_monitor.py",
+    "line": 33,
+    "urls": [
+      "https://himawari8.nict.go.jp/img/D531106/latest.json"
+    ],
+    "source_line": "NICT_LATEST = \"https://himawari8.nict.go.jp/img/D531106/latest.json\""
+  },
+  {
+    "file": "everest_monitor.py",
+    "line": 34,
+    "urls": [
+      "https://himawari.asia/img/D531106/8d/550/{stamp}_{x}_{y}.png"
+    ],
+    "source_line": "NICT_TILE = \"https://himawari.asia/img/D531106/8d/550/{stamp}_{x}_{y}.png\""
+  },
+  {
+    "file": "everest_monitor.py",
+    "line": 37,
+    "urls": [
+      "https://api.open-meteo.com/v1/forecast?latitude=27.9881&longitude=86.9250&elevation=8849"
+    ],
+    "source_line": "    \"https://api.open-meteo.com/v1/forecast?latitude=27.9881&longitude=86.9250&elevation=8849\""
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 202,
+    "urls": [
+      "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson"
+    ],
+    "source_line": "    ok, body, _ = _get(\"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson\")"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 237,
+    "urls": [
+      "https://www.seismicportal.eu/fdsnws/event/1/query?lat=27.988&lon=86.925"
+    ],
+    "source_line": "    u = (\"https://www.seismicportal.eu/fdsnws/event/1/query?lat=27.988&lon=86.925\""
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 249,
+    "urls": [
+      "https://geofon.gfz-potsdam.de/fdsnws/event/1/query?latitude=27.988&longitude=86.925"
+    ],
+    "source_line": "    u = (\"https://geofon.gfz-potsdam.de/fdsnws/event/1/query?latitude=27.988&longitude=86.925\""
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 267,
+    "urls": [
+      "https://api.open-meteo.com/v1/forecast?latitude=27.9881&longitude=86.9250&elevation=8849"
+    ],
+    "source_line": "    u = (\"https://api.open-meteo.com/v1/forecast?latitude=27.9881&longitude=86.9250&elevation=8849\""
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 286,
+    "urls": [
+      "https://www.mountain-forecast.com/peaks/Mount-Everest"
+    ],
+    "source_line": "    ok, body, _ = _get(\"https://www.mountain-forecast.com/peaks/Mount-Everest\")"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 295,
+    "urls": [
+      "https://www.gdacs.org/xml/rss.xml"
+    ],
+    "source_line": "    ok, body, _ = _get(\"https://www.gdacs.org/xml/rss.xml\")"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 317,
+    "urls": [
+      "https://api.crossref.org/journals/1994-0424/works?query=everest&rows=5"
+    ],
+    "source_line": "    u = (\"https://api.crossref.org/journals/1994-0424/works?query=everest&rows=5\""
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 338,
+    "urls": [
+      "https://thinkhazard.org/en/",
+      "https://thinkhazard.org/en/"
+    ],
+    "source_line": "           \"url\": \"https://thinkhazard.org/en/\", \"kind\": \"api\", \"items\": [], \"link\": \"https://thinkhazard.org/en/\","
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 343,
+    "urls": [
+      "https://thinkhazard.org/en/administrativedivision?q=nepal"
+    ],
+    "source_line": "        ok, body, _ = _get(\"https://thinkhazard.org/en/administrativedivision?q=nepal\")"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 370,
+    "urls": [
+      "https://earthquake.usgs.gov/data/comcat/"
+    ],
+    "source_line": "    \"USGS ComCat 综合目录\": {\"kind\": \"map\", \"link\": \"https://earthquake.usgs.gov/data/comcat/\", \"note\": \"地震目录, 支持区域/时间检索\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 372,
+    "urls": [
+      "https://www.seismicportal.eu/"
+    ],
+    "source_line": "    \"Seismic Portal (EMSC 实时)\": {\"kind\": \"map\", \"link\": \"https://www.seismicportal.eu/\", \"note\": \"实时地震图+FDSN API, 支持区域查询\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 384,
+    "urls": [
+      "https://www.windy.com/?27.988,86.925,9"
+    ],
+    "source_line": "    \"Windy\": {\"kind\": \"map\", \"link\": \"https://www.windy.com/?27.988,86.925,9\", \"note\": \"地图已定位珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 385,
+    "urls": [
+      "https://www.ventusky.com/?p=27.99;86.93;9"
+    ],
+    "source_line": "    \"Ventusky\": {\"kind\": \"map\", \"link\": \"https://www.ventusky.com/?p=27.99;86.93;9\", \"note\": \"地图已定位珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 390,
+    "urls": [
+      "https://global-flood.emergency.copernicus.eu/"
+    ],
+    "source_line": "    \"GloFAS 全球洪水预警\": {\"kind\": \"map\", \"link\": \"https://global-flood.emergency.copernicus.eu/\", \"note\": \"全球洪水预警地图, 可放大到喜马拉雅河网\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 391,
+    "urls": [
+      "https://www.globalfloods.eu/"
+    ],
+    "source_line": "    \"Global Floods (GloFAS 门户)\": {\"kind\": \"map\", \"link\": \"https://www.globalfloods.eu/\", \"note\": \"洪水地图, 可放大到喜马拉雅\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 393,
+    "urls": [
+      "https://sites.research.google/floods/"
+    ],
+    "source_line": "    \"Google Flood Hub\": {\"kind\": \"map\", \"link\": \"https://sites.research.google/floods/\", \"note\": \"洪水预报地图\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 400,
+    "urls": [
+      "https://rds.icimod.org/"
+    ],
+    "source_line": "    \"ICIMOD RDS 区域数据库\": {\"kind\": \"map\", \"link\": \"https://rds.icimod.org/\", \"note\": \"HKH 空间数据库, 支持区域检索/地图查看\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 404,
+    "urls": [
+      "https://nsidc.org/data/glacier_inventory/"
+    ],
+    "source_line": "    \"NSIDC 世界冰川清单\": {\"kind\": \"map\", \"link\": \"https://nsidc.org/data/glacier_inventory/\", \"note\": \"冰川清单, 含珠峰区域记录\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 407,
+    "urls": [
+      "https://www.glims.org/RGI/"
+    ],
+    "source_line": "    \"RGI 兰道夫冰川清单\": {\"kind\": \"map\", \"link\": \"https://www.glims.org/RGI/\", \"note\": \"RGI 6.0 含珠峰区域冰川边界\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 429,
+    "urls": [
+      "https://worldview.earthdata.nasa.gov/?v=84,26,90,30"
+    ],
+    "source_line": "    \"NASA Worldview\": {\"kind\": \"map\", \"link\": \"https://worldview.earthdata.nasa.gov/?v=84,26,90,30\", \"note\": \"卫星影像地图, 视图已覆盖珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 430,
+    "urls": [
+      "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z"
+    ],
+    "source_line": "    \"NASA FIRMS 火情\": {\"kind\": \"map\", \"link\": \"https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z\", \"note\": \"火点地图, 已定位珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 431,
+    "urls": [
+      "https://himawari8.nict.go.jp/"
+    ],
+    "source_line": "    \"向日葵 9 号 (NICT)\": {\"kind\": \"map\", \"link\": \"https://himawari8.nict.go.jp/\", \"note\": \"卫星云图; 本地 everest_monitor.py 已做珠峰裁剪\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 432,
+    "urls": [
+      "https://rammb-slider.cira.colostate.edu/"
+    ],
+    "source_line": "    \"CIRA SLIDER 卫星浏览\": {\"kind\": \"map\", \"link\": \"https://rammb-slider.cira.colostate.edu/\", \"note\": \"选择 Himawari-9 全盘后放大珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 433,
+    "urls": [
+      "https://browser.dataspace.copernicus.eu/?zoom=10&lat=27.9881&lng=86.9250"
+    ],
+    "source_line": "    \"Copernicus Browser\": {\"kind\": \"map\", \"link\": \"https://browser.dataspace.copernicus.eu/?zoom=10&lat=27.9881&lng=86.9250\", \"note\": \"卫星地图, 视图已定位珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 434,
+    "urls": [
+      "https://apps.sentinel-hub.com/eo-browser/?zoom=10&lat=27.9881&lng=86.9250"
+    ],
+    "source_line": "    \"EO Browser (Sentinel Hub)\": {\"kind\": \"map\", \"link\": \"https://apps.sentinel-hub.com/eo-browser/?zoom=10&lat=27.9881&lng=86.9250\", \"note\": \"卫星地图, 视图已定位珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 435,
+    "urls": [
+      "https://earthengine.google.com/"
+    ],
+    "source_line": "    \"Google Earth Engine\": {\"kind\": \"map\", \"link\": \"https://earthengine.google.com/\", \"note\": \"可按坐标分析珠峰\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 436,
+    "urls": [
+      "https://earthexplorer.usgs.gov/"
+    ],
+    "source_line": "    \"USGS EarthExplorer\": {\"kind\": \"map\", \"link\": \"https://earthexplorer.usgs.gov/\", \"note\": \"影像检索地图, 支持珠峰坐标\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 441,
+    "urls": [
+      "https://bipadportal.gov.np/"
+    ],
+    "source_line": "    \"尼泊尔 BIPAD 灾害门户\": {\"kind\": \"map\", \"link\": \"https://bipadportal.gov.np/\", \"note\": \"尼泊尔灾害地图门户, 支持区域查看\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 458,
+    "urls": [
+      "https://www.windy.com/-Webcams/webcams"
+    ],
+    "source_line": "    \"Windy 网络摄像头\": {\"kind\": \"map\", \"link\": \"https://www.windy.com/-Webcams/webcams\", \"note\": \"摄像头地图, 可查看 Khumbu/Everest 区域\"},"
+  },
+  {
+    "file": "everest_probe.py",
+    "line": 466,
+    "urls": [
+      "https://www.bing.com/search?q="
+    ],
+    "source_line": "        u = \"https://www.bing.com/search?q=\" + urllib.parse.quote(q) + \"&format=rss\""
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 416,
+    "urls": [
+      "https://api.telegram.org/bot{tg["
+    ],
+    "source_line": "            u = (f\"https://api.telegram.org/bot{tg['bot_token']}/sendMessage?\""
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 428,
+    "urls": [
+      "https://sctapi.ftqq.com/{sc["
+    ],
+    "source_line": "            u = f\"https://sctapi.ftqq.com/{sc['sendkey']}.send\""
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 635,
+    "urls": [
+      "https://{domain}{path}"
+    ],
+    "source_line": "                req = urllib.request.Request(f\"https://{domain}{path}\", headers=HEADERS)"
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 849,
+    "urls": [
+      "https://uguu.se/upload.php"
+    ],
+    "source_line": "                            \"https://uguu.se/upload.php\"], capture_output=True, timeout=90)"
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 857,
+    "urls": [
+      "https://tmpfiles.org/api/v1/upload"
+    ],
+    "source_line": "                            \"https://tmpfiles.org/api/v1/upload\"], capture_output=True, timeout=90)"
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 1221,
+    "urls": [
+      "https://api.telegram.org/bot{tg["
+    ],
+    "source_line": "        url = f\"https://api.telegram.org/bot{tg['bot_token']}/sendPhoto\""
+  },
+  {
+    "file": "hazard_monitor.py",
+    "line": 1237,
+    "urls": [
+      "https://sctapi.ftqq.com/{sc["
+    ],
+    "source_line": "        url = f\"https://sctapi.ftqq.com/{sc['sendkey']}.send\""
+  },
+  {
+    "file": "make_map.py",
+    "line": 117,
+    "urls": [
+      "https://www.seismicportal.eu/fdsnws/event/1/query?lat=27.988&lon=86.925"
+    ],
+    "source_line": "    body = _get(\"https://www.seismicportal.eu/fdsnws/event/1/query?lat=27.988&lon=86.925\""
+  },
+  {
+    "file": "make_map.py",
+    "line": 213,
+    "urls": [
+      "https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
+    ],
+    "source_line": "const amap = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',"
+  },
+  {
+    "file": "make_map.py",
+    "line": 215,
+    "urls": [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+    ],
+    "source_line": "const arcgis = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',"
+  },
+  {
+    "file": "make_map.py",
+    "line": 217,
+    "urls": [
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    ],
+    "source_line": "const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',"
+  },
+  {
+    "file": "region_quakes.py",
+    "line": 32,
+    "urls": [
+      "https://earthquake.usgs.gov/fdsnws/event/1/query"
+    ],
+    "source_line": "FDSN = \"https://earthquake.usgs.gov/fdsnws/event/1/query\""
+  },
+  {
+    "file": "satellite_watch.py",
+    "line": 33,
+    "urls": [
+      "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{layer}/default/"
+    ],
+    "source_line": "    \"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{layer}/default/\""
+  },
+  {
+    "file": "satellite_watch.py",
+    "line": 563,
+    "urls": [
+      "https://worldview.earthdata.nasa.gov/"
+    ],
+    "source_line": "        \"https://worldview.earthdata.nasa.gov/\""
+  },
+  {
+    "file": "windy_shot.js",
+    "line": 19,
+    "urls": [
+      "https://www.windy.com/-Satellite-satellite?satellite,27.988,86.925,7"
+    ],
+    "source_line": "  ['satellite', 'https://www.windy.com/-Satellite-satellite?satellite,27.988,86.925,7'],"
+  },
+  {
+    "file": "windy_shot.js",
+    "line": 20,
+    "urls": [
+      "https://www.windy.com/?wind,27.988,86.925,11"
+    ],
+    "source_line": "  ['wind', 'https://www.windy.com/?wind,27.988,86.925,11'],"
+  }
+]

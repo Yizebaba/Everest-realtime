@@ -1,0 +1,11 @@
+**
+!requirements.txt
+!monitor.py
+!worker.py
+!everest/**
+!config/**
+!tests/**
+!data-sources/**
+config/notify.local.json
+**/__pycache__/**
+**/*.pyc

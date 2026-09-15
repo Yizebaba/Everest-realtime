@@ -1,0 +1,1054 @@
+{
+  "candidate_pipeline.py:CANDIDATE_SCHEMA_VERSION": 1,
+  "candidate_pipeline.py:PIPELINE_NAME": "candidate_pipeline",
+  "candidate_pipeline.py:UNIFIED_EVIDENCE_MODES": {
+    "site_change": "page",
+    "api_record": "structured",
+    "probe_item": "structured",
+    "earthquake_event": "structured",
+    "satellite_visual": "local_image",
+    "satellite_observation": "local_image",
+    "model_forecast": "structured"
+  },
+  "candidate_pipeline.py:PAGE_CANDIDATE_KINDS": [
+    "site_change"
+  ],
+  "candidate_pipeline.py:EVEREST_TERMS": [
+    "everest",
+    "mount everest",
+    "qomolangma",
+    "sagarmatha",
+    "khumbu",
+    "solukhumbu",
+    "珠峰",
+    "珠穆朗玛"
+  ],
+  "daily_report.py:HIMAWARI": "https://himawari8.nict.go.jp/",
+  "everest_monitor.py:NICT_LATEST": "https://himawari8.nict.go.jp/img/D531106/latest.json",
+  "everest_monitor.py:NICT_TILE": "https://himawari.asia/img/D531106/8d/550/{stamp}_{x}_{y}.png",
+  "everest_monitor.py:MODELS": [
+    [
+      "ecmwf_ifs025",
+      "ECMWF"
+    ],
+    [
+      "gfs_seamless",
+      "GFS"
+    ],
+    [
+      "icon_seamless",
+      "ICON"
+    ]
+  ],
+  "everest_monitor.py:OPEN_METEO": "https://api.open-meteo.com/v1/forecast?latitude=27.9881&longitude=86.9250&elevation=8849&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,cloud_cover,freezing_level_height&models=ecmwf_ifs025,gfs_seamless,icon_seamless&wind_speed_unit=ms&timezone=UTC&past_days=1&forecast_days=1",
+  "everest_monitor.py:HEADERS": {
+    "User-Agent": "Mozilla/5.0 (everest-realtime-monitor)"
+  },
+  "everest_probe.py:SUMMIT": [
+    27.9881,
+    86.925
+  ],
+  "everest_probe.py:KEYWORDS": [
+    "everest",
+    "khumbu",
+    "qomolangma",
+    "sagarmatha",
+    "solukhumbu",
+    "珠峰",
+    "珠穆朗玛"
+  ],
+  "everest_probe.py:HEADERS": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) everest-realtime-probe/2.0"
+  },
+  "everest_probe.py:TIMEOUT": 20,
+  "everest_probe.py:MAX_ITEMS": 5,
+  "everest_probe.py:JUNK_TITLES": [
+    "current page",
+    "deutsch",
+    "english",
+    "espanol",
+    "español",
+    "francais",
+    "français",
+    "home",
+    "learn more",
+    "menu",
+    "more",
+    "next",
+    "next page",
+    "page",
+    "prev",
+    "prev page",
+    "previous page",
+    "read more",
+    "share",
+    "中文"
+  ],
+  "everest_probe.py:PLAN": {
+    "USGS M4.5+ 周报 GeoJSON": {
+      "kind": "api",
+      "fn": "usgs"
+    },
+    "USGS ComCat 综合目录": {
+      "kind": "map",
+      "link": "https://earthquake.usgs.gov/data/comcat/",
+      "note": "地震目录, 支持区域/时间检索"
+    },
+    "EMSC 欧洲地中海地震中心": {
+      "kind": "api",
+      "fn": "emsc"
+    },
+    "Seismic Portal (EMSC 实时)": {
+      "kind": "map",
+      "link": "https://www.seismicportal.eu/",
+      "note": "实时地震图+FDSN API, 支持区域查询"
+    },
+    "GEOFON 全球地震台网": {
+      "kind": "api",
+      "fn": "geofon"
+    },
+    "尼泊尔 NEMRC 地震中心": {
+      "kind": "search",
+      "q": "Everest",
+      "zh": true
+    },
+    "中国地震台网中心": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中国地震局": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "ISC 国际地震中心": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "EarthScope (原 IRIS)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "尼泊尔 DHM 水文气象局": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "中国气象局": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中央气象台": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中国天气网": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "印度气象局 IMD": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Windy": {
+      "kind": "map",
+      "link": "https://www.windy.com/?27.988,86.925,9",
+      "note": "地图已定位珠峰"
+    },
+    "Ventusky": {
+      "kind": "map",
+      "link": "https://www.ventusky.com/?p=27.99;86.93;9",
+      "note": "地图已定位珠峰"
+    },
+    "Mountain-Forecast 珠峰": {
+      "kind": "api",
+      "fn": "mf"
+    },
+    "meteoblue": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Open-Meteo": {
+      "kind": "api",
+      "fn": "openmeteo"
+    },
+    "尼泊尔 DHM 水文": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "GloFAS 全球洪水预警": {
+      "kind": "map",
+      "link": "https://global-flood.emergency.copernicus.eu/",
+      "note": "全球洪水预警地图, 可放大到喜马拉雅河网"
+    },
+    "Global Floods (GloFAS 门户)": {
+      "kind": "map",
+      "link": "https://www.globalfloods.eu/",
+      "note": "洪水地图, 可放大到喜马拉雅"
+    },
+    "Copernicus EMS 快速制图": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Google Flood Hub": {
+      "kind": "map",
+      "link": "https://sites.research.google/floods/",
+      "note": "洪水预报地图"
+    },
+    "Dartmouth 洪水观测台": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "中国水利部": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "FloodList 洪水新闻": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "WMO 水文观测 (HydroHub)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "日本 JMA 气象厅": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "ICIMOD 国际山地综合发展中心": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "ICIMOD RDS 区域数据库": {
+      "kind": "map",
+      "link": "https://rds.icimod.org/",
+      "note": "HKH 空间数据库, 支持区域检索/地图查看"
+    },
+    "GLIMS 全球冰川数据库": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "WGMS 世界冰川监测服务": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "NSIDC 美国冰雪数据中心": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "/search?search={q}"
+      ]
+    },
+    "NSIDC 世界冰川清单": {
+      "kind": "map",
+      "link": "https://nsidc.org/data/glacier_inventory/",
+      "note": "冰川清单, 含珠峰区域记录"
+    },
+    "全球冰冻圈观测 GCW": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Copernicus 气候服务": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "RGI 兰道夫冰川清单": {
+      "kind": "map",
+      "link": "https://www.glims.org/RGI/",
+      "note": "RGI 6.0 含珠峰区域冰川边界"
+    },
+    "The Cryosphere 期刊": {
+      "kind": "api",
+      "fn": "crossref_tc"
+    },
+    "NASA Landslides (COOLR)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "USGS 滑坡灾害计划": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Landslide Blog (AGU)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "CNR-IRPI 意大利地质水文保护所": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "中国自然资源部": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中科院成都山地灾害所": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中国地质调查局": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "中国地质环境监测院": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "GeoNet 新西兰地质灾害": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "GeoHazards International": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "avalanche.org (美国雪崩中心联盟)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "EAWS 欧洲雪崩预警服务": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "SLF 瑞士雪与雪崩研究所": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Avalanche Canada": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "AvaFrame 开源雪崩模型": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "EVK2CNR 喜马拉雅观测站": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Colorado Avalanche Info Center": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "喜马拉雅数据库": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "8000ers.com": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Alan Arnette 登山博客": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "NASA Worldview": {
+      "kind": "map",
+      "link": "https://worldview.earthdata.nasa.gov/?v=84,26,90,30",
+      "note": "卫星影像地图, 视图已覆盖珠峰"
+    },
+    "NASA FIRMS 火情": {
+      "kind": "map",
+      "link": "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z",
+      "note": "火点地图, 已定位珠峰"
+    },
+    "向日葵 9 号 (NICT)": {
+      "kind": "map",
+      "link": "https://himawari8.nict.go.jp/",
+      "note": "卫星云图; 本地 everest_monitor.py 已做珠峰裁剪"
+    },
+    "CIRA SLIDER 卫星浏览": {
+      "kind": "map",
+      "link": "https://rammb-slider.cira.colostate.edu/",
+      "note": "选择 Himawari-9 全盘后放大珠峰"
+    },
+    "Copernicus Browser": {
+      "kind": "map",
+      "link": "https://browser.dataspace.copernicus.eu/?zoom=10&lat=27.9881&lng=86.9250",
+      "note": "卫星地图, 视图已定位珠峰"
+    },
+    "EO Browser (Sentinel Hub)": {
+      "kind": "map",
+      "link": "https://apps.sentinel-hub.com/eo-browser/?zoom=10&lat=27.9881&lng=86.9250",
+      "note": "卫星地图, 视图已定位珠峰"
+    },
+    "Google Earth Engine": {
+      "kind": "map",
+      "link": "https://earthengine.google.com/",
+      "note": "可按坐标分析珠峰"
+    },
+    "USGS EarthExplorer": {
+      "kind": "map",
+      "link": "https://earthexplorer.usgs.gov/",
+      "note": "影像检索地图, 支持珠峰坐标"
+    },
+    "Sentinel Asia": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Copernicus 计划官网": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "GDACS 全球灾害预警": {
+      "kind": "api",
+      "fn": "gdacs"
+    },
+    "ReliefWeb (OCHA)": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "尼泊尔 BIPAD 灾害门户": {
+      "kind": "map",
+      "link": "https://bipadportal.gov.np/",
+      "note": "尼泊尔灾害地图门户, 支持区域查看"
+    },
+    "尼泊尔 NDRRMA 减灾管理局": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Copernicus EMS": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "UNDRR 联合国减灾办": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "WMO 世界气象组织": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "中国应急管理部": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "ADRC 亚洲减灾中心": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "国家预警信息发布中心": {
+      "kind": "search",
+      "q": "珠峰",
+      "zh": true
+    },
+    "Kathmandu Post": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "/search?q={q}",
+        "?s={q}"
+      ]
+    },
+    "The Himalayan Times": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "?s={q}"
+      ]
+    },
+    "myRepublica (尼泊尔)": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "/search?query={q}",
+        "?s={q}"
+      ]
+    },
+    "Explorer's Web": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "?s={q}"
+      ]
+    },
+    "The Watchers 灾害新闻": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "?s={q}"
+      ]
+    },
+    "Nepali Times": {
+      "kind": "search",
+      "q": "Everest",
+      "patterns": [
+        "/search?q={q}"
+      ]
+    },
+    "Himalayan Rescue Association": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "SPCC 萨加玛塔污染控制委员会": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "尼泊尔登山协会 NMA": {
+      "kind": "search",
+      "q": "Everest"
+    },
+    "Windy 网络摄像头": {
+      "kind": "map",
+      "link": "https://www.windy.com/-Webcams/webcams",
+      "note": "摄像头地图, 可查看 Khumbu/Everest 区域"
+    }
+  },
+  "hazard_monitor.py:HEADERS": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) everest-realtime-monitor/2.0"
+  },
+  "hazard_monitor.py:SIGNATURE": "—— vx:No1-Shine ｜ 珠峰多灾监控系统［测试版］",
+  "hazard_monitor.py:MAX_BODY": 3000000,
+  "hazard_monitor.py:TIMEOUT": 25,
+  "hazard_monitor.py:DEFAULT_KEYWORDS": [
+    "everest",
+    "khumbu",
+    "qomolangma",
+    "sagarmatha",
+    "solukhumbu",
+    "珠峰",
+    "珠穆朗玛"
+  ],
+  "hazard_monitor.py:DEFAULT_SIGNALS": [
+    "预警",
+    "警报",
+    "警告",
+    "警戒",
+    "观测",
+    "监测",
+    "实时",
+    "雷达",
+    "卫星",
+    "天气",
+    "降水",
+    "降雨",
+    "降雪",
+    "风力",
+    "风速",
+    "气温",
+    "温度",
+    "洪水",
+    "山洪",
+    "冰川湖",
+    "冰崩",
+    "雪崩",
+    "滑坡",
+    "泥石流",
+    "地震",
+    "震级",
+    "余震",
+    "封路",
+    "封闭",
+    "疏散",
+    "救援",
+    "能见度",
+    "warning",
+    "alert",
+    "advisory",
+    "forecast",
+    "observation",
+    "observed",
+    "monitor",
+    "real-time",
+    "realtime",
+    "radar",
+    "satellite",
+    "weather",
+    "rain",
+    "snow",
+    "snowfall",
+    "wind",
+    "gust",
+    "temperature",
+    "flood",
+    "glof",
+    "glacier",
+    "icefall",
+    "avalanche",
+    "landslide",
+    "debris",
+    "earthquake",
+    "seismic",
+    "magnitude",
+    "aftershock",
+    "storm",
+    "blizzard",
+    "monsoon",
+    "closed",
+    "closure",
+    "evacuat",
+    "rescue",
+    "visibility"
+  ],
+  "hazard_monitor.py:DEFAULT_IGNORE": [
+    "create an account",
+    "\\bsign in\\b",
+    "\\blog ?in\\b",
+    "登录",
+    "注册",
+    "born on this day",
+    "\\balmanac\\b",
+    "cookie",
+    "privacy",
+    "terms of (use|service)",
+    "newsletter",
+    "subscribe",
+    "advertis",
+    "copyright",
+    "all rights reserved",
+    "contact us",
+    "facebook\\.com|instagram\\.com|youtube\\.com|twitter\\.com|x\\.com|t\\.me",
+    "\\brss\\b",
+    "sitemap",
+    "newsletter",
+    "→|-->",
+    "\\bmenu\\b"
+  ],
+  "hazard_monitor.py:CADENCE_BY_CATEGORY": {
+    "地震": 15,
+    "气象": 60,
+    "水文洪水": 30,
+    "冰川与冰湖溃决": 720,
+    "滑坡泥石流": 720,
+    "雪崩冰崩": 720,
+    "卫星遥感": 60,
+    "综合预警平台": 60,
+    "新闻与现场信息": 30,
+    "专项监控": 30
+  },
+  "hazard_monitor.py:CADENCE_DEFAULT": 720,
+  "hazard_monitor.py:CADENCE_FLOOR": 5,
+  "hazard_monitor.py:RETRY_AFTER_FAIL_MIN": 30,
+  "hazard_monitor.py:WATCH_TEXT_LIMIT": 4000,
+  "hazard_monitor.py:CAT_COLORS": {
+    "地震": "#d64545",
+    "气象": "#2f6fd0",
+    "水文洪水": "#2b9fb0",
+    "冰川与冰湖溃决": "#7a5fd0",
+    "滑坡泥石流": "#b06a2a",
+    "雪崩冰崩": "#1f9d8f",
+    "卫星遥感": "#5a8f2a",
+    "综合预警平台": "#c94f8a",
+    "新闻与现场信息": "#6d7680"
+  },
+  "make_map.py:SUMMIT": [
+    27.9881,
+    86.925
+  ],
+  "make_map.py:CAT_COLORS": {
+    "地震": "#d64545",
+    "气象": "#2f6fd0",
+    "水文洪水": "#2b9fb0",
+    "冰川与冰湖溃决": "#7a5fd0",
+    "滑坡泥石流": "#b06a2a",
+    "雪崩冰崩": "#1f9d8f",
+    "卫星遥感": "#5a8f2a",
+    "综合预警平台": "#c94f8a",
+    "新闻与现场信息": "#6d7680"
+  },
+  "make_map.py:COORDS": {
+    "USGS M4.5+ 周报 GeoJSON": [
+      38.95,
+      -77.35
+    ],
+    "USGS ComCat 综合目录": [
+      38.95,
+      -77.35
+    ],
+    "EMSC 欧洲地中海地震中心": [
+      48.62,
+      2.2
+    ],
+    "Seismic Portal (EMSC 实时)": [
+      48.62,
+      2.2
+    ],
+    "GEOFON 全球地震台网": [
+      52.38,
+      13.06
+    ],
+    "尼泊尔 NEMRC 地震中心": [
+      27.7,
+      85.3
+    ],
+    "中国地震台网中心": [
+      39.9,
+      116.4
+    ],
+    "中国地震局": [
+      39.9,
+      116.4
+    ],
+    "ISC 国际地震中心": [
+      51.45,
+      -1.15
+    ],
+    "EarthScope (原 IRIS)": [
+      39.99,
+      -105.26
+    ],
+    "尼泊尔 DHM 水文气象局": [
+      27.7,
+      85.3
+    ],
+    "中国气象局": [
+      39.9,
+      116.4
+    ],
+    "中央气象台": [
+      39.9,
+      116.4
+    ],
+    "中国天气网": [
+      39.9,
+      116.4
+    ],
+    "印度气象局 IMD": [
+      18.53,
+      73.85
+    ],
+    "Windy": [
+      50.08,
+      14.44
+    ],
+    "Ventusky": [
+      49.74,
+      13.37
+    ],
+    "Mountain-Forecast 珠峰": [
+      51.51,
+      -0.13
+    ],
+    "meteoblue": [
+      47.56,
+      7.59
+    ],
+    "Open-Meteo": [
+      47.38,
+      8.55
+    ],
+    "尼泊尔 DHM 水文": [
+      27.7,
+      85.3
+    ],
+    "GloFAS 全球洪水预警": [
+      45.81,
+      8.63
+    ],
+    "Global Floods (GloFAS 门户)": [
+      45.81,
+      8.63
+    ],
+    "Copernicus EMS 快速制图": [
+      45.81,
+      8.63
+    ],
+    "Google Flood Hub": [
+      37.42,
+      -122.08
+    ],
+    "Dartmouth 洪水观测台": [
+      40.01,
+      -105.27
+    ],
+    "中国水利部": [
+      39.9,
+      116.4
+    ],
+    "FloodList 洪水新闻": [
+      51.51,
+      -0.13
+    ],
+    "WMO 水文观测 (HydroHub)": [
+      46.2,
+      6.15
+    ],
+    "日本 JMA 气象厅": [
+      35.68,
+      139.75
+    ],
+    "ICIMOD 国际山地综合发展中心": [
+      27.7,
+      85.3
+    ],
+    "ICIMOD RDS 区域数据库": [
+      27.7,
+      85.3
+    ],
+    "GLIMS 全球冰川数据库": [
+      40.01,
+      -105.27
+    ],
+    "WGMS 世界冰川监测服务": [
+      47.38,
+      8.55
+    ],
+    "NSIDC 美国冰雪数据中心": [
+      40.01,
+      -105.27
+    ],
+    "NSIDC 世界冰川清单": [
+      40.01,
+      -105.27
+    ],
+    "全球冰冻圈观测 GCW": [
+      46.2,
+      6.15
+    ],
+    "Copernicus 气候服务": [
+      51.42,
+      -0.93
+    ],
+    "RGI 兰道夫冰川清单": [
+      40.01,
+      -105.27
+    ],
+    "The Cryosphere 期刊": [
+      51.53,
+      9.93
+    ],
+    "NASA Landslides (COOLR)": [
+      38.99,
+      -76.85
+    ],
+    "USGS 滑坡灾害计划": [
+      38.95,
+      -77.35
+    ],
+    "Landslide Blog (AGU)": [
+      54.77,
+      -1.57
+    ],
+    "CNR-IRPI 意大利地质水文保护所": [
+      43.1,
+      12.39
+    ],
+    "中国自然资源部": [
+      39.9,
+      116.4
+    ],
+    "中科院成都山地灾害所": [
+      30.67,
+      104.07
+    ],
+    "中国地质调查局": [
+      39.9,
+      116.4
+    ],
+    "中国地质环境监测院": [
+      39.9,
+      116.4
+    ],
+    "GeoNet 新西兰地质灾害": [
+      -41.29,
+      174.78
+    ],
+    "GeoHazards International": [
+      37.44,
+      -122.16
+    ],
+    "avalanche.org (美国雪崩中心联盟)": [
+      39.74,
+      -104.99
+    ],
+    "EAWS 欧洲雪崩预警服务": [
+      47.27,
+      11.39
+    ],
+    "SLF 瑞士雪与雪崩研究所": [
+      46.81,
+      9.84
+    ],
+    "Avalanche Canada": [
+      51.05,
+      -114.07
+    ],
+    "AvaFrame 开源雪崩模型": [
+      47.2,
+      9.61
+    ],
+    "EVK2CNR 喜马拉雅观测站": [
+      45.7,
+      9.67
+    ],
+    "Colorado Avalanche Info Center": [
+      39.74,
+      -104.99
+    ],
+    "喜马拉雅数据库": [
+      27.7,
+      85.3
+    ],
+    "Alan Arnette 登山博客": [
+      39.74,
+      -104.99
+    ],
+    "NASA Worldview": [
+      38.99,
+      -76.85
+    ],
+    "NASA FIRMS 火情": [
+      38.99,
+      -76.85
+    ],
+    "向日葵 9 号 (NICT)": [
+      35.68,
+      139.69
+    ],
+    "CIRA SLIDER 卫星浏览": [
+      40.59,
+      -105.08
+    ],
+    "Copernicus Browser": [
+      51.94,
+      4.37
+    ],
+    "EO Browser (Sentinel Hub)": [
+      46.05,
+      14.51
+    ],
+    "Google Earth Engine": [
+      37.42,
+      -122.08
+    ],
+    "USGS EarthExplorer": [
+      38.95,
+      -77.35
+    ],
+    "Sentinel Asia": [
+      35.68,
+      139.69
+    ],
+    "Copernicus 计划官网": [
+      51.94,
+      4.37
+    ],
+    "GDACS 全球灾害预警": [
+      45.81,
+      8.63
+    ],
+    "ReliefWeb (OCHA)": [
+      46.2,
+      6.15
+    ],
+    "尼泊尔 BIPAD 灾害门户": [
+      27.7,
+      85.3
+    ],
+    "尼泊尔 NDRRMA 减灾管理局": [
+      27.7,
+      85.3
+    ],
+    "Copernicus EMS": [
+      45.81,
+      8.63
+    ],
+    "UNDRR 联合国减灾办": [
+      46.2,
+      6.15
+    ],
+    "WMO 世界气象组织": [
+      46.2,
+      6.15
+    ],
+    "中国应急管理部": [
+      39.9,
+      116.4
+    ],
+    "ADRC 亚洲减灾中心": [
+      34.69,
+      135.2
+    ],
+    "国家预警信息发布中心": [
+      39.9,
+      116.4
+    ],
+    "Kathmandu Post": [
+      27.7,
+      85.3
+    ],
+    "The Himalayan Times": [
+      27.7,
+      85.3
+    ],
+    "myRepublica (尼泊尔)": [
+      27.7,
+      85.3
+    ],
+    "Explorer's Web": [
+      51.51,
+      -0.13
+    ],
+    "The Watchers 灾害新闻": [
+      45.81,
+      15.98
+    ],
+    "Nepali Times": [
+      27.7,
+      85.3
+    ],
+    "Himalayan Rescue Association": [
+      27.7,
+      85.3
+    ],
+    "SPCC 萨加玛塔污染控制委员会": [
+      27.81,
+      86.71
+    ],
+    "尼泊尔登山协会 NMA": [
+      27.7,
+      85.3
+    ],
+    "Windy 网络摄像头": [
+      50.08,
+      14.44
+    ]
+  },
+  "monitor_runtime.py:SCHEMA_VERSION": 2,
+  "monitor_runtime.py:RETRY_BASE_SECONDS": 60,
+  "monitor_runtime.py:LOCK_TIMEOUT_SECONDS": 15.0,
+  "region_quakes.py:FDSN": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+  "region_quakes.py:WINDOW_DAYS": 7,
+  "satellite_watch.py:GIBS": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{layer}/default/{date}/{matrix}/{z}/{y}/{x}.jpg",
+  "satellite_watch.py:BBOX": {
+    "min_lat": 26.8,
+    "max_lat": 29.2,
+    "min_lon": 85.2,
+    "max_lon": 88.8
+  },
+  "satellite_watch.py:ZOOM": 7,
+  "satellite_watch.py:TILE_SIZE": 256,
+  "satellite_watch.py:WEB_MERCATOR_MAX_LAT": 85.0511287798066,
+  "satellite_watch.py:LAYERS": [
+    [
+      "VIIRS_SNPP_CorrectedReflectance_TrueColor",
+      "VIIRS 真彩",
+      "GoogleMapsCompatible_Level9"
+    ],
+    [
+      "MODIS_Terra_CorrectedReflectance_TrueColor",
+      "MODIS 真彩",
+      "GoogleMapsCompatible_Level9"
+    ],
+    [
+      "MODIS_Terra_NDSI_Snow_Cover",
+      "MODIS NDSI",
+      "GoogleMapsCompatible_Level8"
+    ]
+  ],
+  "satellite_watch.py:DIFF_THRESHOLD": 5.0,
+  "satellite_watch.py:PIXEL_DELTA_THRESHOLD": 30,
+  "satellite_watch.py:MIN_VALID_COVERAGE_PCT": 80.0,
+  "satellite_watch.py:MIN_VALID_INTERSECTION_PCT": 80.0,
+  "satellite_watch.py:MIN_PUSH_HOURS": 6,
+  "satellite_watch.py:BASELINE_FORMAT": "web-mercator-bbox-rgba-v2",
+  "satellite_watch.py:LAYER_STATE_VERSION": 2
+}
