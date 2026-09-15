@@ -38,6 +38,19 @@ def make_cards(result, folder, settings):
     result['cards'] = []
     result['image_kind'] = 'original_screenshot'
     result['screenshot_error'] = ''
+    map_views = result.get('map_views') or []
+    if map_views:
+        captured = [view for view in map_views if view.get('image') and not view.get('error')]
+        if captured:
+            for view in captured:
+                target = folder / f"mapview-{view['layer']}.png"
+                shutil.copyfile(view['image'], target)
+                result['cards'].append(str(target))
+            result['image_kind'] = 'everest_map_view'
+            result['map_view_layers'] = [view['layer'] for view in captured]
+            return result
+        result['screenshot_error'] = 'No Everest map view captured'
+        return result
     override = settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
     sources = []
     if not override:

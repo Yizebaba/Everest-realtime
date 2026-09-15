@@ -10,6 +10,8 @@ services:
       - ./data-docker:/app/data
       - ./config/sources.json:/app/config/sources.json:ro
       - ./config/runtime.json:/app/config/runtime.json:ro
+      - ./config/acquisition.json:/app/config/acquisition.json:ro
+      - ./config/map_views.json:/app/config/map_views.json:ro
     secrets:
       - notify_config
     environment:

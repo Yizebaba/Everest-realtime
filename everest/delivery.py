@@ -8,7 +8,7 @@ import requests
 
 from .core import fingerprint, read_json
 
-SIGNATURE = 'vx:No1-Shine ｜ 珠峰多灾监控系统［测试版］'
+SIGNATURE = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
 
 
 def destination(config):
@@ -52,7 +52,7 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             continue
         record = read_json(notice['result_path'])
         try:
-            if record.get('image_kind') not in ('original_screenshot','translated_source_screenshot'):
+            if record.get('image_kind') not in ('original_screenshot','translated_source_screenshot','everest_map_view'):
                 raise ValueError('Original screenshot required; redrawn cards are not sent')
             cards = record.get('cards', [])
             hashes = record.get('card_hashes', {})
@@ -69,7 +69,14 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         source = record['source']
         source_url = record.get('original_capture', {}).get('final_url') or source['url']
         text = f"来源：{source_url}\n\n"
-        label='中文网页截图（机器翻译）' if record.get('image_kind')=='translated_source_screenshot' else '原文截图'
+        if record.get('image_kind') == 'everest_map_view':
+            layers = '、'.join(record.get('map_view_layers') or [])
+            text += f"珠峰视角图层：{layers}\n\n"
+            label = '珠峰地图截图'
+        elif record.get('image_kind') == 'translated_source_screenshot':
+            label = '中文网页截图（机器翻译）'
+        else:
+            label = '原文截图'
         text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls))
         text += '\n\n'+SIGNATURE
         store.update_notice(key, 'sending')

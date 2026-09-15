@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "everest": {
+    "center": [27.988, 86.925],
+    "bbox": [85.2, 26.8, 88.8, 29.2],
+    "zoom": 9,
+    "note": "统一珠峰视角。bbox 为 经度min,纬度min,经度max,纬度max。"
+  },
+  "views": {
+    "weather-06": {
+      "label": "Windy",
+      "translate": false,
+      "views": [
+        {"layer": "wind", "url": "https://www.windy.com/?27.988,86.925,9,wind", "verified": true},
+        {"layer": "rain", "url": "https://www.windy.com/?27.988,86.925,9,rain", "verified": true},
+        {"layer": "temp", "url": "https://www.windy.com/?27.988,86.925,9,temp", "verified": true},
+        {"layer": "clouds", "url": "https://www.windy.com/?27.988,86.925,9,clouds", "verified": true}
+      ]
+    },
+    "weather-07": {
+      "label": "Ventusky",
+      "translate": false,
+      "views": [
+        {"layer": "default", "url": "https://www.ventusky.com/?p=27.99;86.93;9", "verified": true}
+      ]
+    },
+    "satellite-01": {
+      "label": "NASA Worldview",
+      "translate": false,
+      "views": [
+        {"layer": "true_color", "url": "https://worldview.earthdata.nasa.gov/?v=84,26,90,30", "verified": true}
+      ]
+    },
+    "satellite-02": {
+      "label": "NASA FIRMS 火情",
+      "translate": false,
+      "views": [
+        {"layer": "active_fires_24h", "url": "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z", "verified": true}
+      ]
+    },
+    "news-10": {
+      "label": "Windy 网络摄像头",
+      "translate": false,
+      "views": [
+        {"layer": "webcams", "url": "https://www.windy.com/-Webcams/webcams?27.988,86.925,9", "verified": true}
+      ]
+    },
+    "flood-02": {
+      "label": "GloFAS 洪水",
+      "translate": false,
+      "views": [
+        {"layer": "flood_forecast", "url": "https://global-flood.emergency.copernicus.eu/map-viewer/", "verified": true}
+      ]
+    },
+    "flood-03": {
+      "label": "Global Floods",
+      "translate": false,
+      "views": [
+        {"layer": "flood_forecast", "url": "https://www.globalfloods.eu/", "verified": true}
+      ]
+    },
+    "platform-03": {
+      "label": "尼泊尔 BIPAD",
+      "translate": false,
+      "views": [
+        {"layer": "hazards", "url": "https://bipadportal.gov.np/", "verified": true}
+      ]
+    }
+  },
+  "unavailable": {
+    "satellite-06": "EO Browser 已停止服务，官方要求迁移到新平台",
+    "satellite-05": "Copernicus Browser 需先通过匿名或登录入口",
+    "satellite-04": "CIRA SLIDER 需在页面内手动选择 Himawari-9，URL 不能可靠定位珠峰",
+    "satellite-07": "Google Earth Engine 需登录账号",
+    "satellite-08": "USGS EarthExplorer 需交互检索",
+    "flood-05": "Google Flood Hub 需页面内交互定位",
+    "glacier-02": "ICIMOD RDS 是数据检索站，不是地图",
+    "glacier-09": "GLIMS RGI 是数据说明站，不是地图"
+  }
+}

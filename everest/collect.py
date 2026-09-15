@@ -188,10 +188,22 @@ def collect(source, defaults, settings, folder, run_id):
                 result['matches'].append(json.dumps({k:v for k,v in metadata.items() if k!='attempts'},ensure_ascii=False,sort_keys=True))
             except Exception as exc:
                 result['acquisition_errors'].append({'stage':'wms','error':type(exc).__name__})
+        from .mapviews import capture_views
+        views = capture_views(source['rule_id'], folder, settings, settings.get('_root', '.'))
+        if views:
+            result['map_views'] = views
+            for view in views:
+                if view['error']:
+                    result['acquisition_errors'].append({'stage':'map_view','layer':view['layer'],'error':view['error']})
+                else:
+                    result['matches'].append(json.dumps({'layer':view['layer'],'view_url':view['view_url'],
+                        'everest_center':view['everest_center'],'captured_at':view['captured_at']},ensure_ascii=False,sort_keys=True))
+            if any(view['image'] for view in views):
+                result['result'] = 'found'
         result['content']=list(dict.fromkeys(result['content']))
         result['matches']=list(dict.fromkeys(result['matches']))
         result['coverage']='partial' if result['pending_urls'] or result['acquisition_errors'] else 'complete_for_requested_pages'
-        if result['pages'] or result['map_images']:
+        if result['pages'] or result['map_images'] or result.get('map_views'):
             result['result']='found' if result['matches'] or result['map_images'] else 'not_found'
         else:
             result['error']='No source data acquired'

@@ -151,7 +151,7 @@ def test_exactly_one_notice_per_source_contains_image_and_no_repeat(store,tmp_pa
     stats=deliver(store,'run-one',CONFIG,SETTINGS,uploader=lambda *a:'https://example.test/card.png',sender=sender,sleeper=lambda _:None)
     assert stats['accepted']==1 and len(sent)==1 and '![原文截图' in sent[0][1]
     assert 'found' not in sent[0][1] and '获取时间' not in sent[0][1]
-    assert sent[0][1].endswith('vx:No1-Shine ｜ 珠峰多灾监控系统［测试版］')
+    assert sent[0][1].endswith('vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］')
     deliver(store,'run-one',CONFIG,SETTINGS,sender=sender)
     assert len(sent)==1
 

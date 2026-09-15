@@ -84,6 +84,7 @@ def main(argv=None):
         if unknown: parser.error('Unknown rule_id: '+', '.join(sorted(unknown)))
     settings = read_json(ROOT/'config/runtime.json')
     settings['source_plans'] = read_json(ROOT/'config/acquisition.json')
+    settings['_root'] = str(ROOT)
     if os.environ.get('EVEREST_BROWSER_CHANNEL'):
         settings['browser_channel'] = os.environ['EVEREST_BROWSER_CHANNEL']
     if os.environ.get('EVEREST_FONT'):
