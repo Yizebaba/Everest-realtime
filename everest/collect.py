@@ -185,7 +185,7 @@ def collect(source, defaults, settings, folder, run_id):
                 image,metadata=fetch_wms(plan['wms'],folder,settings)
                 result['map_images'].insert(0,{'path':str(image),**metadata})
                 result['source_time']=metadata.get('time')
-                result['matches'].append(json.dumps(metadata,ensure_ascii=False,sort_keys=True))
+                result['matches'].append(json.dumps({k:v for k,v in metadata.items() if k!='attempts'},ensure_ascii=False,sort_keys=True))
             except Exception as exc:
                 result['acquisition_errors'].append({'stage':'wms','error':type(exc).__name__})
         result['content']=list(dict.fromkeys(result['content']))
