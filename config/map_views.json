@@ -4,77 +4,148 @@
     "center": [27.988, 86.925],
     "bbox": [85.2, 26.8, 88.8, 29.2],
     "zoom": 9,
-    "note": "统一珠峰视角。bbox 为 经度min,纬度min,经度max,纬度max。"
+    "zoom_max_massif_bbox": [86.7, 27.8, 87.15, 28.15],
+    "note": "珠峰高精度视角及独立图层直达配置"
   },
   "views": {
-    "weather-06": {
-      "label": "Windy",
-      "translate": false,
-      "views": [
-        {"layer": "wind", "url": "https://www.windy.com/?27.988,86.925,9,wind", "verified": true},
-        {"layer": "rain", "url": "https://www.windy.com/?27.988,86.925,9,rain", "verified": true},
-        {"layer": "temp", "url": "https://www.windy.com/?27.988,86.925,9,temp", "verified": true},
-        {"layer": "clouds", "url": "https://www.windy.com/?27.988,86.925,9,clouds", "verified": true}
-      ]
-    },
-    "weather-07": {
-      "label": "Ventusky",
-      "translate": false,
-      "views": [
-        {"layer": "default", "url": "https://www.ventusky.com/?p=27.99;86.93;9", "verified": true}
-      ]
-    },
     "satellite-01": {
-      "label": "NASA Worldview",
+      "label": "NASA Worldview (珠峰多图层)",
       "translate": false,
       "views": [
-        {"layer": "true_color", "url": "https://worldview.earthdata.nasa.gov/?v=84,26,90,30", "verified": true}
+        {
+          "layer": "true_color_modis",
+          "name": "MODIS Terra 真彩色遥感底图",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=MODIS_Terra_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        },
+        {
+          "layer": "snow_cover_ndsi",
+          "name": "MODIS Terra 积雪覆盖与冰川反射 (NDSI)",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=MODIS_Terra_NDSI_Snow_Cover,MODIS_Terra_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        },
+        {
+          "layer": "surface_temp_day",
+          "name": "MODIS Terra 白天地表与冰面温度 (LST Day)",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=MODIS_Terra_Land_Surface_Temp_Day,MODIS_Terra_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        },
+        {
+          "layer": "surface_temp_night",
+          "name": "MODIS Terra 夜间地表与冰面温度 (LST Night)",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=MODIS_Terra_Land_Surface_Temp_Night,MODIS_Terra_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        },
+        {
+          "layer": "viirs_hires_truecolor",
+          "name": "Suomi NPP / VIIRS 高清真彩",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=VIIRS_SNPP_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        },
+        {
+          "layer": "fires_thermal_375m",
+          "name": "NOAA-20 VIIRS 375米高分辨率热异常/火点",
+          "url": "https://worldview.earthdata.nasa.gov/?v=86.5,27.7,87.3,28.2&l=VIIRS_NOAA20_Thermal_Anomalies_375m_All,VIIRS_NOAA20_CorrectedReflectance_TrueColor,Reference_Labels_15m,Reference_Features_15m,Coastlines_15m",
+          "collapse_sidebar": true,
+          "verified": true
+        }
       ]
     },
     "satellite-02": {
-      "label": "NASA FIRMS 火情",
+      "label": "NASA FIRMS 火情与热异常 (珠峰最大化视角)",
       "translate": false,
       "views": [
-        {"layer": "active_fires_24h", "url": "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z", "verified": true}
+        {
+          "layer": "active_fires_24h",
+          "name": "珠峰24小时热异常检测",
+          "url": "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,11z",
+          "verified": true
+        }
       ]
     },
     "satellite-04": {
-      "label": "CIRA SLIDER (向日葵9号)",
+      "label": "CIRA SLIDER (向日葵9号珠峰视角)",
       "translate": false,
       "views": [
-        {"layer": "geocolor", "url": "https://slider.cira.colostate.edu/?sat=himawari&sec=full_disk&x=5500&y=5500&z=0&angle=0&im=12&ts=1&st=0&et=0&speed=130&motion=loop&maps%5Bborders%5D=white&p%5B0%5D=geocolor&opacity%5B0%5D=1", "verified": true}
+        {
+          "layer": "geocolor",
+          "name": "Himawari-9 全盘真彩云图",
+          "url": "https://slider.cira.colostate.edu/?sat=himawari&sec=full_disk&x=5500&y=5500&z=0&angle=0&im=12&ts=1&st=0&et=0&speed=130&motion=loop&maps%5Bborders%5D=white&p%5B0%5D=geocolor&opacity%5B0%5D=1",
+          "verified": true
+        }
       ]
     },
-    "news-10": {
-      "label": "Windy 网络摄像头",
+    "weather-06": {
+      "label": "Windy (珠峰定位图层)",
       "translate": false,
       "views": [
-        {"layer": "webcams", "url": "https://www.windy.com/-Webcams/webcams?27.988,86.925,9", "verified": true}
+        {"layer": "wind", "name": "珠峰风力图层", "url": "https://www.windy.com/?27.988,86.925,11,wind", "verified": true},
+        {"layer": "rain", "name": "珠峰降雨/对流图层", "url": "https://www.windy.com/?27.988,86.925,11,rain", "verified": true},
+        {"layer": "temp", "name": "珠峰气温图层", "url": "https://www.windy.com/?27.988,86.925,11,temp", "verified": true},
+        {"layer": "clouds", "name": "珠峰云量图层", "url": "https://www.windy.com/?27.988,86.925,11,clouds", "verified": true}
+      ]
+    },
+    "weather-07": {
+      "label": "Ventusky (珠峰气象地图)",
+      "translate": false,
+      "views": [
+        {"layer": "default", "name": "珠峰全要素地图", "url": "https://www.ventusky.com/?p=27.99;86.93;10", "verified": true}
       ]
     },
     "flood-02": {
-      "label": "GloFAS 洪水",
+      "label": "GloFAS 洪水 (喜马拉雅河网)",
       "translate": false,
       "views": [
-        {"layer": "flood_forecast", "url": "https://global-flood.emergency.copernicus.eu/map-viewer/", "verified": true}
+        {"layer": "flood_forecast", "name": "全球洪水预警地图查看器", "url": "https://global-flood.emergency.copernicus.eu/map-viewer/", "verified": true}
       ]
     },
     "flood-03": {
       "label": "Global Floods",
       "translate": false,
       "views": [
-        {"layer": "flood_forecast", "url": "https://www.globalfloods.eu/", "verified": true}
+        {"layer": "flood_forecast", "name": "GloFAS 门户地图", "url": "https://www.globalfloods.eu/map-viewer/", "verified": true}
+      ]
+    },
+    "flood-05": {
+      "label": "Google Flood Hub (免登录具体灾害点直达)",
+      "translate": false,
+      "views": [
+        {
+          "layer": "global_overview",
+          "name": "Flood Hub 全球河流洪涝概览",
+          "url": "https://sites.research.google/floods/l/0/0/3",
+          "verified": true
+        },
+        {
+          "layer": "disaster_spot",
+          "name": "Flood Hub 具体洪水灾害点放大直达",
+          "url": "https://sites.research.google/floods/l/20.448859974710246/106.30645967775808/7.8515200970787316/s/103517bf235842b7a9a201ea0d38cdd9",
+          "verified": true
+        }
       ]
     },
     "platform-03": {
-      "label": "尼泊尔 BIPAD",
+      "label": "尼泊尔 BIPAD 灾害门户",
       "translate": false,
       "views": [
-        {"layer": "hazards", "url": "https://bipadportal.gov.np/", "verified": true}
+        {"layer": "hazards", "name": "国家灾害综合地图", "url": "https://bipadportal.gov.np/", "verified": true}
+      ]
+    },
+    "news-10": {
+      "label": "Windy 网络摄像头 (珠峰区域)",
+      "translate": false,
+      "views": [
+        {"layer": "webcams", "name": "昆布/珠峰实时摄像头", "url": "https://www.windy.com/-Webcams/webcams?27.988,86.925,10", "verified": true}
       ]
     }
   },
   "unavailable": {
-    "satellite-07": "Google Earth Engine 需登录账号"
+    "satellite-07": "Google Earth Engine 需登录账号",
+    "satellite-08": "USGS EarthExplorer 需登录账号"
   }
 }

@@ -89,6 +89,15 @@ def capture_views(rule_id, folder, settings, root):
                         raise ValueError('Map view HTTP ' + str(response.status))
                     page.wait_for_timeout(settings.get('map_settle_ms', 7000))
                     record['dismissed'] = _dismiss_gates(page, settings)
+                    # If this view requested collapsing sidebars to maximize map canvas view
+                    if view.get('collapse_sidebar'):
+                        try:
+                            collapse_btn = page.locator("button.sidebar-collapse, button[title*='Collapse sidebar'], [aria-label*='Collapse sidebar']").first
+                            if collapse_btn.count() and collapse_btn.is_visible():
+                                collapse_btn.click(timeout=3000)
+                                page.wait_for_timeout(1000)
+                        except Exception:
+                            pass
                     if record['dismissed']:
                         page.wait_for_timeout(settings.get('map_settle_ms', 7000))
                     text = page.title() + '\n' + page.locator('body').inner_text()

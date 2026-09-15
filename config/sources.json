@@ -428,14 +428,15 @@
     {
       "category": "水文洪水",
       "category_id": "flood",
-      "name": "Google Flood Hub",
+      "name": "Google Flood Hub (灾害点放大直达)",
       "rule_id": "flood-05",
       "source_id": "flood-05",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://sites.research.google/floods/",
+      "url": "https://sites.research.google/floods/l/20.448859974710246/106.30645967775808/7.8515200970787316/s/103517bf235842b7a9a201ea0d38cdd9",
       "enabled": true,
-      "interval_minutes": 30
+      "interval_minutes": 30,
+      "note": "免登录具体洪水灾害点定位"
     },
     {
       "category": "水文洪水",
