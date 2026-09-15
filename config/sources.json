@@ -531,7 +531,7 @@
       "source_id": "glacier-02",
       "source_tier": "supporting",
       "nature": "observation",
-      "url": "https://rds.icimod.org/",
+      "url": "https://rds.icimod.org/metadata/search?q=Everest&page=1&per_page=9&qKeyword=",
       "enabled": true,
       "interval_minutes": 720
     },
@@ -627,7 +627,7 @@
       "source_id": "glacier-09",
       "source_tier": "supporting",
       "nature": "observation",
-      "url": "https://www.glims.org/RGI/",
+      "url": "https://www.glims.org/maps/glims?catalog=RGI",
       "enabled": true,
       "interval_minutes": 720
     },
@@ -923,12 +923,12 @@
     {
       "category": "卫星遥感",
       "category_id": "satellite",
-      "name": "CIRA SLIDER 卫星浏览",
+      "name": "CIRA SLIDER (向日葵9号)",
       "rule_id": "satellite-04",
       "source_id": "satellite-04",
       "source_tier": "supporting",
       "nature": "observation",
-      "url": "https://rammb-slider.cira.colostate.edu/",
+      "url": "https://slider.cira.colostate.edu/?sat=himawari&sec=full_disk&x=5500&y=5500&z=0&angle=0&im=12&ts=1&st=0&et=0&speed=130&motion=loop&maps%5Bborders%5D=white&p%5B0%5D=geocolor&opacity%5B0%5D=1",
       "enabled": true,
       "interval_minutes": 60
     },
@@ -947,12 +947,13 @@
     {
       "category": "卫星遥感",
       "category_id": "satellite",
-      "name": "EO Browser (Sentinel Hub)",
+      "name": "Planet Insights Browser (原 EO Browser)",
       "rule_id": "satellite-06",
       "source_id": "satellite-06",
       "source_tier": "supporting",
       "nature": "observation",
-      "url": "https://apps.sentinel-hub.com/eo-browser/",
+      "url": "https://insights.planet.com/analyze/browser/",
+      "note": "原 EO Browser 官方已停止服务，自动重定向至 Planet Insights Browser",
       "enabled": true,
       "interval_minutes": 60
     },

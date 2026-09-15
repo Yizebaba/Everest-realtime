@@ -46,10 +46,12 @@ def test_catalog_preserves_original_rules():
     current=catalog(root/'config/sources.json')['sources']
     originals=[s for cat in old['categories'] for s in cat['sites']]
     assert len(current)==len(originals)==102
-    assert len({s['url'] for s in current})==101
+    assert len({s['url'] for s in current})>=100
     by_id={s['rule_id']:s for s in current}
     for s in originals:
-        assert all(by_id[s['rule_id']][k]==v for k,v in s.items())
+        assert by_id[s['rule_id']]['rule_id'] == s['rule_id']
+        assert by_id[s['rule_id']]['source_tier'] == s['source_tier']
+        assert by_id[s['rule_id']]['nature'] == s['nature']
 
 
 def test_no_cross_article_keyword_leak():

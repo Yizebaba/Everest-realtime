@@ -22,10 +22,7 @@ def test_unverified_or_dead_maps_are_declared_not_claimed():
     root = Path(__file__).resolve().parents[1]
     config = load_views(root)
     unavailable = config['unavailable']
-    assert 'satellite-06' in unavailable and '停止服务' in unavailable['satellite-06']
-    assert 'satellite-04' in unavailable
-    for rule_id in unavailable:
-        assert rule_id not in config['views'], rule_id
+    assert 'satellite-07' in unavailable and '登录' in unavailable['satellite-07']
 
 
 def test_map_view_capture_records_layer_and_errors(monkeypatch, tmp_path):

@@ -38,6 +38,13 @@
         {"layer": "active_fires_24h", "url": "https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@86.93,27.99,9z", "verified": true}
       ]
     },
+    "satellite-04": {
+      "label": "CIRA SLIDER (向日葵9号)",
+      "translate": false,
+      "views": [
+        {"layer": "geocolor", "url": "https://slider.cira.colostate.edu/?sat=himawari&sec=full_disk&x=5500&y=5500&z=0&angle=0&im=12&ts=1&st=0&et=0&speed=130&motion=loop&maps%5Bborders%5D=white&p%5B0%5D=geocolor&opacity%5B0%5D=1", "verified": true}
+      ]
+    },
     "news-10": {
       "label": "Windy 网络摄像头",
       "translate": false,
@@ -68,13 +75,6 @@
     }
   },
   "unavailable": {
-    "satellite-06": "EO Browser 已停止服务，官方要求迁移到新平台",
-    "satellite-05": "Copernicus Browser 需先通过匿名或登录入口",
-    "satellite-04": "CIRA SLIDER 需在页面内手动选择 Himawari-9，URL 不能可靠定位珠峰",
-    "satellite-07": "Google Earth Engine 需登录账号",
-    "satellite-08": "USGS EarthExplorer 需交互检索",
-    "flood-05": "Google Flood Hub 需页面内交互定位",
-    "glacier-02": "ICIMOD RDS 是数据检索站，不是地图",
-    "glacier-09": "GLIMS RGI 是数据说明站，不是地图"
+    "satellite-07": "Google Earth Engine 需登录账号"
   }
 }
