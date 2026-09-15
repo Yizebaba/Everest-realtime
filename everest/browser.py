@@ -36,7 +36,7 @@ def render(url, folder, settings, capture_map=False):
             page.evaluate('window.scrollTo(0,0)')
             dom = page.content()
             (folder/'rendered.html').write_text(dom, encoding='utf-8')
-            page.screenshot(path=str(folder/'page.png'), timeout=15000)
+            page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
             network=[]; images=[]; records=[]
             for r in responses:
                 ctype=r.headers.get('content-type','')

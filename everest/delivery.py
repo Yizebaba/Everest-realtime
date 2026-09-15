@@ -50,6 +50,8 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             continue
         record = read_json(notice['result_path'])
         try:
+            if record.get('image_kind') != 'original_screenshot':
+                raise ValueError('Original screenshot required; redrawn cards are not sent')
             cards = record.get('cards', [])
             hashes = record.get('card_hashes', {})
             if not cards:
@@ -63,9 +65,9 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             stats['blocked'] += 1
             continue
         source = record['source']
-        text = f"来源：{source['url']}\n\n获取时间 UTC：{record['retrieved_at']}\n\n结果：{record['result']} · {record['change']}\n\n"
-        text += '\n\n'.join(f'![数据卡 {i+1}]({url})' for i,url in enumerate(urls))
-        text += f"\n\n逐条内容见图片，本地运行：{run_id}\n\n—— vx:No1-Shine ｜ 珠峰多灾监控系统［测试版］"
+        source_url = record.get('original_capture', {}).get('final_url') or source['url']
+        text = f"来源：{source_url}\n\n"
+        text += '\n\n'.join(f'![原文截图 {i+1}]({url})' for i,url in enumerate(urls))
         store.update_notice(key, 'sending')
         try:
             receipt = sender(config, '珠峰监控 · '+source['name'], text)

@@ -120,6 +120,10 @@ def test_os_lock_exclusive(tmp_path):
 
 def queued(store,tmp_path):
     r=result()
+    from PIL import Image
+    path=tmp_path/'page.png'
+    Image.new('RGB',(50,50),'blue').save(path)
+    r['screenshot']={'captured_at':r['retrieved_at']}
     make_cards(r,tmp_path,SETTINGS)
     r['card_hashes']={p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in r['cards']}
     store.record(r,tmp_path/'r.json','all',destination(CONFIG))
@@ -145,7 +149,8 @@ def test_exactly_one_notice_per_source_contains_image_and_no_repeat(store,tmp_pa
     sent=[]
     def sender(c,t,b): sent.append((t,b)); return {'code':0}
     stats=deliver(store,'run-one',CONFIG,SETTINGS,uploader=lambda *a:'https://example.test/card.png',sender=sender,sleeper=lambda _:None)
-    assert stats['accepted']==1 and len(sent)==1 and '![数据卡' in sent[0][1]
+    assert stats['accepted']==1 and len(sent)==1 and '![原文截图' in sent[0][1]
+    assert 'found' not in sent[0][1] and '获取时间' not in sent[0][1]
     deliver(store,'run-one',CONFIG,SETTINGS,sender=sender)
     assert len(sent)==1
 
@@ -174,6 +179,9 @@ def test_cli_full_run_isolated(monkeypatch,tmp_path):
     def collector(s,d,c,f,run_id):
         f.mkdir(parents=True,exist_ok=True)
         r=result(run_id); r['source']=s
+        from PIL import Image
+        Image.new('RGB',(50,50),'blue').save(f/'page.png')
+        r['screenshot']={'captured_at':r['retrieved_at']}
         return r
     monkeypatch.setattr(monitor,'collect',collector)
     import everest.evidence
