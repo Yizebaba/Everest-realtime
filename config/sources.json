@@ -415,7 +415,7 @@
       "source_tier": "core",
       "nature": "observation",
       "url": "https://global-flood.emergency.copernicus.eu/",
-      "enabled": true,
+      "enabled": false,
       "interval_minutes": 30
     },
     {
@@ -427,7 +427,7 @@
       "source_tier": "core",
       "nature": "observation",
       "url": "https://global-flood.emergency.copernicus.eu/map-viewer/",
-      "enabled": true,
+      "enabled": false,
       "interval_minutes": 30,
       "note": "中文翻译页面截图（含地图查看器主体）"
     },

@@ -133,17 +133,16 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         if record.get('image_kind') == 'everest_map_view':
             items = record.get('map_view_items') or []
             if items and len(items) == len(urls):
-                names = [it.get('name') or LAYER_NAMES.get(it['layer'], it['layer']) for it in items]
-                text += f"珠峰视角图层（共{len(items)}层）：{'、'.join(names)}\n\n"
+                text += f"珠峰视角图层（共{len(items)}层）：\n\n"
                 for it, url in zip(items, urls):
                     name = it.get('name') or LAYER_NAMES.get(it['layer'], it['layer'])
                     text += f"![{name}]({url})\n\n"
             else:
                 raw = record.get('map_view_layers') or []
-                names = [LAYER_NAMES.get(l, l) for l in raw]
-                text += f"珠峰视角图层：{'、'.join(names)}\n\n"
+                count = len(urls) if urls else len(raw)
+                text += f"珠峰视角图层（共{count}层）：\n\n"
                 for i, url in enumerate(urls):
-                    name = names[i] if i < len(names) else f"图层 {i+1}"
+                    name = LAYER_NAMES.get(raw[i], f"图层 {i+1}") if i < len(raw) else f"图层 {i+1}"
                     text += f"![{name}]({url})\n\n"
         elif record.get('image_kind') == 'translated_source_screenshot':
             label = '中文网页截图（机器翻译）'

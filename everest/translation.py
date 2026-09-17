@@ -18,6 +18,14 @@ DISMISS_TEXTS = (
     '知道了', '我了解', '我同意', '接受', '同意', '关闭', '继续',
 )
 
+MODAL_CLOSE_SELECTORS = (
+    '#modal_disclaimer_close', '.modalClose', '.modal-close',
+    '#modal_disclaimer_window [data-icon="xmark"]',
+    '#modal_disclaimer_window svg.fa-xmark',
+    '.modal .close', '.modal button.close',
+    '[aria-label="Close"]', '[title="Close"]',
+)
+
 BLOCK_PAGES = ('您的请求可能存在威胁', '请求已被阻断', 'WEB 应用防火墙', 'Just a moment...')
 
 
@@ -46,6 +54,30 @@ def dismiss_gates(page, rounds=3):
             page.wait_for_timeout(1200)
         except Exception:
             break
+
+    # Click dedicated close buttons on modal windows (e.g. NASA FIRMS disclaimer)
+    for sel in MODAL_CLOSE_SELECTORS:
+        try:
+            loc = page.locator(sel)
+            if loc.count() and loc.first.is_visible():
+                loc.first.click(timeout=2000)
+                clicked.append(sel)
+                page.wait_for_timeout(1000)
+                break
+        except Exception:
+            pass
+
+    # Clean any stubborn modal backdrops
+    try:
+        page.evaluate("""() => {
+            const m = document.querySelector('#modal_disclaimer_window, .fmmModalDisclaimer');
+            if (m) m.remove();
+            const b = document.querySelector('.modalClick, .modal-backdrop');
+            if (b) b.remove();
+        }""")
+    except Exception:
+        pass
+
     return clicked
 
 
