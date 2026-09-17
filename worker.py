@@ -14,7 +14,7 @@ from pathlib import Path
 
 from everest.core import now, write_json
 
-TICK = int(os.environ.get('EVEREST_TICK_SECONDS', '300'))
+TICK = int(os.environ.get('EVEREST_TICK_SECONDS', '180'))
 FAST = os.environ.get('EVEREST_FAST_ENABLED', 'true').lower() not in ('0', 'false', 'no')
 
 
@@ -39,4 +39,4 @@ while True:
         'fast_channel_alive': fast_alive,
         'tick_seconds': TICK,
     })
-    time.sleep(max(30, TICK))
+    time.sleep(max(10, TICK))

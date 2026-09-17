@@ -151,9 +151,20 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             label = '原文截图'
             text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls)) + '\n\n'
         text += SIGNATURE
+        dedup_sum = record.get('dedup_summary', '')
+        if dedup_sum:
+            text += f"\n\n【四引擎查重打擂】\n{dedup_sum}"
+        cep_tag = record.get('cep_engine', '')
+        cep_reason = record.get('cep_reason', '')
+        if cep_tag:
+            title = f"【{cep_tag}触发】珠峰监控 · {source['name']}"
+            if cep_reason:
+                text = f"判定依据：{cep_reason}\n\n" + text
+        else:
+            title = f"珠峰监控 · {source['name']}"
         store.update_notice(key, 'sending')
         try:
-            receipt = sender(config, '珠峰监控 · '+source['name'], text)
+            receipt = sender(config, title, text)
         except Exception as exc:
             # The provider may already have accepted a timed-out request. Do not auto-replay it.
             store.update_notice(key, 'unconfirmed', type(exc).__name__)

@@ -38,6 +38,13 @@ def run(args, settings, sources, config, store, data):
         except Exception as exc:
             result['card_error'] = type(exc).__name__
         return result
+    from everest.cep import evaluate_opencep, evaluate_lightcep
+    from everest.siddhi import evaluate_siddhi
+    from everest.sigma import evaluate_sigma
+    from everest.dedup import dedup_lightcep, dedup_opencep, dedup_siddhi, dedup_sigma
+    import datetime as dt_mod
+    now_dt = dt_mod.datetime.now(dt_mod.timezone.utc)
+    
     delivery_lock = None
     try:
         from threading import Lock
@@ -46,14 +53,50 @@ def run(args, settings, sources, config, store, data):
             futures = [executor.submit(job, s) for s in selected]
             for future in as_completed(futures):
                 result = future.result()
+                source_item = result['source']
+                
+                # Run Quad-Engine Evaluation (OpenCEP vs LightCEP vs Siddhi vs Sigma)
+                opencep_hit, opencep_reason = evaluate_opencep(source_item, result, now_dt)
+                lightcep_hit, lightcep_reason = evaluate_lightcep(source_item, result, now_dt)
+                siddhi_hit, siddhi_reason = evaluate_siddhi(source_item, result, now_dt)
+                sigma_hit, sigma_reason = evaluate_sigma(source_item, result, now_dt)
+                
+                # Tag verdict
+                hits = []
+                reasons = []
+                if opencep_hit:
+                    hits.append('OpenCEP')
+                    reasons.append(opencep_reason)
+                if lightcep_hit:
+                    hits.append('LightCEP')
+                    reasons.append(lightcep_reason)
+                if siddhi_hit:
+                    hits.append('Siddhi')
+                    reasons.append(siddhi_reason)
+                if sigma_hit:
+                    hits.append('Sigma')
+                    reasons.append(sigma_reason)
+
+                # Run Quad-Engine Deduplication Evaluation (Independent Check)
+                d_li, d_li_r = dedup_lightcep(source_item, result, now_dt)
+                d_op, d_op_r = dedup_opencep(source_item, result, now_dt)
+                d_si, d_si_r = dedup_siddhi(source_item, result, now_dt)
+                d_sg, d_sg_r = dedup_sigma(source_item, result, now_dt)
+                
+                result['dedup_summary'] = f"LightCEP:[{d_li_r}] | OpenCEP:[{d_op_r}] | Siddhi:[{d_si_r}] | Sigma:[{d_sg_r}]"
+                
+                result['cep_engine'] = '+'.join(hits)
+                result['cep_reason'] = ' | '.join(reasons)
+
                 target = folder / result['source']['rule_id'] / 'result.json'
                 store.record(result, target, args.notify, destination(config))
                 results.append(result)
                 state['completed'] += 1
                 state['errors'] += int(result['result'] == 'unknown' or not result.get('cards'))
                 write_json(folder / 'status.json', state)
-                print(f"[{state['completed']}/{len(selected)}] {result['source']['rule_id']} {result['result']} cards={len(result['cards'])}", flush=True)
-                if args.send:
+                cep_str = f" CEP=[{result['cep_engine']}]" if result.get('cep_engine') else " CEP=[静默未触发]"
+                print(f"[{state['completed']}/{len(selected)}] {result['source']['rule_id']} {result['result']} cards={len(result['cards'])}{cep_str}", flush=True)
+                if args.send and result.get('cep_engine'):
                     with delivery_lock:
                         sub_stats = deliver(store, run_id, config, settings)
                         if 'delivery' not in state:

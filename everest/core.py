@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sqlite3
+import time
 from pathlib import Path
 
 
@@ -47,20 +48,28 @@ def catalog(path):
 
 
 @contextlib.contextmanager
-def run_lock(directory):
-    """OS-held lock; a killed process releases it without deleting another owner's lock."""
+def run_lock(directory, max_wait_seconds=15):
+    """OS-held lock; waits gracefully if temporarily held by another task."""
     directory.mkdir(parents=True, exist_ok=True)
     with (directory / 'monitor.lock').open('a+b') as f:
         f.seek(0, 2)
         if f.tell() == 0:
             f.write(b'0'); f.flush()
         f.seek(0)
-        if os.name == 'nt':
-            import msvcrt
-            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        start = time.monotonic()
+        while True:
+            try:
+                if os.name == 'nt':
+                    import msvcrt
+                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except (BlockingIOError, OSError):
+                if time.monotonic() - start >= max_wait_seconds:
+                    raise
+                time.sleep(1)
         try:
             yield
         finally:
@@ -111,7 +120,10 @@ class Store:
         result['change'] = 'unknown' if not valid else ('baseline' if old is None else ('changed' if changed else 'unchanged'))
         result['added'] = [x for x in content if x not in prior] if changed else []
         result['removed'] = [x for x in prior if x not in content] if changed else []
-        selected = policy == 'all' or (policy == 'changed' and changed)
+        # Bypass global de-duplication for CEP experiment:
+        # Determination of notification is delegated to CEP engines
+        cep_tag = result.get('cep_engine', '')
+        selected = policy == 'all' or (policy == 'changed' and changed) or bool(cep_tag)
         result['selected_for_notification'] = selected
         write_json(path, result)
         with self.db:
@@ -119,8 +131,9 @@ class Store:
             if valid:
                 self.db.execute('INSERT OR REPLACE INTO baseline VALUES (?,?,?,?)', (key, digest, json.dumps(content, ensure_ascii=False), result['retrieved_at']))
             if selected:
+                notice_id = f"{result['run_id']}:{key}:{cep_tag}" if cep_tag else f"{result['run_id']}:{key}"
                 self.db.execute('INSERT OR IGNORE INTO notices (id,run_id,rule_id,result_path,destination) VALUES (?,?,?,?,?)',
-                    (result['run_id'] + ':' + key, result['run_id'], key, str(path), destination))
+                    (notice_id, result['run_id'], key, str(path), destination))
         return selected
 
     def changed(self, source, result):

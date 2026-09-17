@@ -12,6 +12,8 @@ services:
       - ./config/runtime.json:/app/config/runtime.json:ro
       - ./config/acquisition.json:/app/config/acquisition.json:ro
       - ./config/map_views.json:/app/config/map_views.json:ro
+      - ./CEP_EXPERIMENT_MANUAL.md:/app/CEP_EXPERIMENT_MANUAL.md:ro
+      - ./DEDUPLICATION_EXPERIMENT_MANUAL.md:/app/DEDUPLICATION_EXPERIMENT_MANUAL.md:ro
     secrets:
       - notify_config
     environment:
