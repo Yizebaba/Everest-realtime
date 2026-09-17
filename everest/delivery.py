@@ -1,3 +1,4 @@
+import datetime as dt
 import hashlib
 import json
 import re
@@ -118,7 +119,17 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             continue
         source = record['source']
         source_url = record.get('original_capture', {}).get('final_url') or source['url']
-        text = f"来源：{source_url}\n\n"
+        retrieved_raw = record.get('retrieved_at')
+        if retrieved_raw:
+            try:
+                dt_obj = dt.datetime.fromisoformat(retrieved_raw)
+                bj_time = dt_obj.astimezone(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
+                time_line = f"监测时间：{bj_time}\n"
+            except Exception:
+                time_line = f"监测时间：{retrieved_raw}\n"
+        else:
+            time_line = ""
+        text = f"来源：{source_url}\n{time_line}\n"
         if record.get('image_kind') == 'everest_map_view':
             items = record.get('map_view_items') or []
             if items and len(items) == len(urls):
@@ -156,5 +167,7 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         store.update_notice(key, 'accepted', receipt={'code': 0})
         stats['accepted'] += 1
         print(f"已接收：{source['rule_id']} {source['name']}", flush=True)
-        sleeper(max(3, float(settings['notification_interval_seconds'])))
+        interval = float(settings.get('notification_interval_seconds', 0))
+        if interval > 0:
+            sleeper(interval)
     return stats

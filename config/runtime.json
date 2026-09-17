@@ -6,7 +6,7 @@
   "browser_channel": "chrome",
   "browser_wait_ms": 2500,
   "font": "C:/Windows/Fonts/msyh.ttc",
-  "notification_interval_seconds": 3,
+  "notification_interval_seconds": 0,
   "image_upload_url": "https://uguu.se/upload.php",
   "render_html": true,
   "follow_details": true,

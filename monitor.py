@@ -38,7 +38,10 @@ def run(args, settings, sources, config, store, data):
         except Exception as exc:
             result['card_error'] = type(exc).__name__
         return result
+    delivery_lock = None
     try:
+        from threading import Lock
+        delivery_lock = Lock()
         with ThreadPoolExecutor(max_workers=max(1, min(8, int(settings['workers'])))) as executor:
             futures = [executor.submit(job, s) for s in selected]
             for future in as_completed(futures):
@@ -50,10 +53,15 @@ def run(args, settings, sources, config, store, data):
                 state['errors'] += int(result['result'] == 'unknown' or not result.get('cards'))
                 write_json(folder / 'status.json', state)
                 print(f"[{state['completed']}/{len(selected)}] {result['source']['rule_id']} {result['result']} cards={len(result['cards'])}", flush=True)
+                if args.send:
+                    with delivery_lock:
+                        sub_stats = deliver(store, run_id, config, settings)
+                        if 'delivery' not in state:
+                            state['delivery'] = {'accepted': 0, 'blocked': 0, 'unconfirmed': 0}
+                        for k, v in sub_stats.items():
+                            state['delivery'][k] = state['delivery'].get(k, 0) + v
         results.sort(key=lambda r:r['source']['rule_id'])
         write_report(folder, results)
-        if args.send:
-            state['delivery'] = deliver(store, run_id, config, settings)
         state.update(phase='completed', exit_code=int(bool(state['errors']) or any(state.get('delivery',{}).get(k,0) for k in ('blocked','unconfirmed'))))
     except Exception as exc:
         state.update(phase='failed', error=type(exc).__name__, exit_code=1)

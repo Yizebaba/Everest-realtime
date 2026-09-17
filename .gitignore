@@ -1,4 +1,5 @@
 config/notify.local.json
+github_token.txt
 data/
 data-docker/
 *.log
