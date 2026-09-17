@@ -34,6 +34,18 @@ def render(url, folder, settings, capture_map=False):
                 page.mouse.wheel(0, 700)
                 page.wait_for_timeout(400)
             page.evaluate('window.scrollTo(0,0)')
+            # For USGS earthquake map: click the newest earthquake item on the left list to focus map
+            if 'earthquake.usgs.gov/earthquakes/map' in url:
+                try:
+                    items = page.locator('mat-list-option, .map-list-item, [role=option], .mat-list-item, .mat-mdc-list-item').all()
+                    for item in items:
+                        t = item.inner_text().strip()
+                        if 'M ' in t or any(c.isdigit() for c in t):
+                            item.click(timeout=3000)
+                            page.wait_for_timeout(2500)
+                            break
+                except Exception:
+                    pass
             dom = page.content()
             (folder/'rendered.html').write_text(dom, encoding='utf-8')
             page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)

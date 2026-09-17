@@ -140,18 +140,18 @@
         ]
       },
       "cadence_min": 5,
-      "enabled": true,
+      "enabled": false,
       "interval_minutes": 5
     },
     {
       "category": "地震",
       "category_id": "earthquake",
-      "name": "USGS ComCat 综合目录",
+      "name": "USGS 全球地震实时地图",
       "rule_id": "earthquake-02",
       "source_id": "earthquake-02",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://earthquake.usgs.gov/data/comcat/",
+      "url": "https://earthquake.usgs.gov/earthquakes/map/?showPopulationDensity=true&baseLayer=satellite",
       "enabled": true,
       "interval_minutes": 15
     },
