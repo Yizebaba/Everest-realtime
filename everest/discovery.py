@@ -25,6 +25,13 @@ def discover(body, base, settings):
             if 'next' in tag.get('rel', []) or text.lower() in ('next', 'next page', 'older posts', '下一页', '下页'):
                 add(tag['href'], 'next')
     if settings.get('follow_details'):
+        keywords = [k.lower() for k in settings.get('search_terms', [])] + ['everest', 'himalaya', 'glacier', 'flood', 'avalanche', 'basecamp', 'disaster', 'landslide', 'icefall']
+        # Priority 1: Specifically matched articles with target keywords in anchor text
+        for tag in soup.select('article a[href], h1 a[href], h2 a[href], h3 a[href], h4 a[href], a[rel="bookmark"], a[href*="/news/"], a[href*="/story/"], a[href*="/article/"]'):
+            text = tag.get_text(' ', strip=True).lower()
+            if any(k in text for k in keywords):
+                add(tag.get('href'), 'matched_article')
+        # Priority 2: General article links if no specific match
         for tag in soup.select('article a[href], h2 a[href], h3 a[href], a[rel="bookmark"]'):
             add(tag.get('href'), 'detail')
     if settings.get('discover_search'):

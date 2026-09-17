@@ -84,9 +84,16 @@ def make_cards(result, folder, settings):
     override = settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
     sources = []
     if not override:
-        if result.get('screenshot') and (folder/'page.png').is_file():
-            sources.append(folder/'page.png')
-        sources.extend(sorted(folder.glob('page-*/page.png')))
+        subpages = sorted(folder.glob('page-*/page.png'))
+        if subpages and result['source'].get('nature') == 'news':
+            # For news sources: prioritize the opened specific article pages over home
+            sources.extend(subpages)
+            if result.get('screenshot') and (folder/'page.png').is_file():
+                sources.append(folder/'page.png')
+        else:
+            if result.get('screenshot') and (folder/'page.png').is_file():
+                sources.append(folder/'page.png')
+            sources.extend(subpages)
         sources = [path for path in sources if not (path.parent/'rendered.html').exists() or not any(marker in
             (path.parent/'rendered.html').read_text(encoding='utf-8', errors='replace')
             for marker in BLOCK_PAGES)]
