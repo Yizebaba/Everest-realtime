@@ -13,7 +13,7 @@ def public_url(url):
     return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
 
-def render(url, folder, settings, capture_map=False):
+def render(url, folder, settings, capture_map=False, capture_screenshot=True):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         opts = {'headless': True}
@@ -46,10 +46,31 @@ def render(url, folder, settings, capture_map=False):
                             break
                 except Exception:
                     pass
+            if 'nature.com' in url:
+                try:
+                    page.evaluate("""() => {
+                        const m = document.querySelector('.c-site-messages, [class*="nature-briefing"], [id*="nature-briefing"]');
+                        if (m) m.remove();
+                    }""")
+                except Exception:
+                    pass
             dom = page.content()
             (folder/'rendered.html').write_text(dom, encoding='utf-8')
-            page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
-            write_json(folder/'screenshot-info.json',{'source_url':url,'final_url':public_url(page.url),'captured_at':now()})
+            if capture_screenshot:
+                if 'emsc-csem.org' in url:
+                    try:
+                        right_box = page.locator('.hright, #hmap').first.bounding_box()
+                        if right_box:
+                            top = max(0, right_box['y'] - 10)
+                            height = min(1200, right_box['height'] + 700)
+                            page.screenshot(path=str(folder/'page.png'), clip={'x': max(0, right_box['x'] - 10), 'y': top, 'width': min(1280, right_box['width'] + 20), 'height': height}, timeout=15000)
+                        else:
+                            page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
+                    except Exception:
+                        page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
+                else:
+                    page.screenshot(path=str(folder/'page.png'), full_page=True, timeout=15000)
+                write_json(folder/'screenshot-info.json',{'source_url':url,'final_url':public_url(page.url),'captured_at':now()})
             network=[]; images=[]; records=[]
             for r in responses:
                 ctype=r.headers.get('content-type','')
