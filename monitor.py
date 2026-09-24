@@ -13,6 +13,7 @@ from everest.core import Store, catalog, now, read_json, run_lock, write_json
 from everest.collect import collect
 from everest.evidence import make_cards, write_report
 from everest.delivery import deliver, destination
+from everest.windy import metrics as windy_metrics
 
 ROOT = Path(__file__).resolve().parent
 
@@ -29,74 +30,79 @@ def run(args, settings, sources, config, store, data):
     state = {'run_id': run_id, 'phase': 'running', 'total': len(selected), 'completed': 0, 'errors': 0, 'exit_code': None}
     write_json(folder / 'status.json', state)
     results = []
+    by_id = {source['rule_id']: source for source in sources['sources']}
     def job(source):
         target = folder / source['rule_id']
         result = collect(source, sources.get('defaults', {}), settings, target, run_id)
-        try:
-            make_cards(result, target, settings)
-            result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
-        except Exception as exc:
-            result['card_error'] = type(exc).__name__
-        return result
-    from everest.cep import evaluate_opencep, evaluate_lightcep
-    from everest.siddhi import evaluate_siddhi
-    from everest.sigma import evaluate_sigma
-    from everest.dedup import dedup_lightcep, dedup_opencep, dedup_siddhi, dedup_sigma
-    import datetime as dt_mod
-    now_dt = dt_mod.datetime.now(dt_mod.timezone.utc)
-    
+        return result, target
     delivery_lock = None
     try:
         from threading import Lock
         delivery_lock = Lock()
+        from everest.shadow_cep import evaluate as shadow_cep_evaluate
+        from everest.shadow_dedup import evaluate as shadow_dedup_evaluate
         with ThreadPoolExecutor(max_workers=max(1, min(8, int(settings['workers'])))) as executor:
             futures = [executor.submit(job, s) for s in selected]
             for future in as_completed(futures):
-                result = future.result()
-                source_item = result['source']
-                
-                # Run Quad-Engine Evaluation (OpenCEP vs LightCEP vs Siddhi vs Sigma)
-                opencep_hit, opencep_reason = evaluate_opencep(source_item, result, now_dt)
-                lightcep_hit, lightcep_reason = evaluate_lightcep(source_item, result, now_dt)
-                siddhi_hit, siddhi_reason = evaluate_siddhi(source_item, result, now_dt)
-                sigma_hit, sigma_reason = evaluate_sigma(source_item, result, now_dt)
-                
-                # Tag verdict
-                hits = []
-                reasons = []
-                if opencep_hit:
-                    hits.append('OpenCEP')
-                    reasons.append(opencep_reason)
-                if lightcep_hit:
-                    hits.append('LightCEP')
-                    reasons.append(lightcep_reason)
-                if siddhi_hit:
-                    hits.append('Siddhi')
-                    reasons.append(siddhi_reason)
-                if sigma_hit:
-                    hits.append('Sigma')
-                    reasons.append(sigma_reason)
-
-                # Run Quad-Engine Deduplication Evaluation (Independent Check)
-                d_li, d_li_r = dedup_lightcep(source_item, result, now_dt)
-                d_op, d_op_r = dedup_opencep(source_item, result, now_dt)
-                d_si, d_si_r = dedup_siddhi(source_item, result, now_dt)
-                d_sg, d_sg_r = dedup_sigma(source_item, result, now_dt)
-                
-                result['dedup_summary'] = f"LightCEP:[{d_li_r}] | OpenCEP:[{d_op_r}] | Siddhi:[{d_si_r}] | Sigma:[{d_sg_r}]"
-                
-                result['cep_engine'] = '+'.join(hits)
-                result['cep_reason'] = ' | '.join(reasons)
-
-                target = folder / result['source']['rule_id'] / 'result.json'
-                store.record(result, target, args.notify, destination(config))
+                result, target = future.result()
+                pair_trigger = False
+                if result['source']['rule_id'] == 'weather-06':
+                    metric = windy_metrics(result)
+                    limits = settings.get('windy_pair', {})
+                    active = ((metric['wind_kmh'] or 0) >= limits['wind_kmh_min']
+                              or (metric['precipitation_mm'] or 0) >= limits['precipitation_mm_min'])
+                    pair_trigger = store.paired_weather_trigger(
+                        'weather-06', active, metric['temperature_c'], limits['temperature_drop_c_min'])
+                    result['windy_metrics'] = metric
+                    result['paired_nasa_trigger'] = pair_trigger
+                    if pair_trigger:
+                        result['relevance'] = 'in_scope'
+                        result['event_status'] = 'candidate'
+                # Shadow CEP observes only the four selected numeric streams.
+                # It cannot alter original change detection, screenshots, or delivery.
+                try:
+                    result['shadow_cep'] = shadow_cep_evaluate(result['source'], result, data)
+                except Exception as exc:
+                    result['shadow_cep'] = {'scope': 'shadow_only', 'error': type(exc).__name__}
+                try:
+                    result['shadow_dedup'] = shadow_dedup_evaluate(result['source'], result, data)
+                except Exception as exc:
+                    result['shadow_dedup'] = {'scope': 'shadow_only', 'error': type(exc).__name__}
+                # Browser screenshots are the expensive path. Create them only for a
+                # relevant source whose normalized event content actually changed.
+                if store.changed(result['source'], result) or pair_trigger:
+                    if pair_trigger:
+                        from everest.mapviews import capture_views
+                        result['map_views'] = capture_views('weather-06', target, settings, settings['_root'])
+                    try:
+                        make_cards(result, target, settings)
+                        result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
+                    except Exception as exc:
+                        result['card_error'] = type(exc).__name__
+                target = target / 'result.json'
+                store.record(result, target, 'all' if pair_trigger else args.notify, destination(config))
+                if pair_trigger:
+                    nasa_source = by_id[settings['windy_pair']['nasa_rule_id']]
+                    nasa_target = folder / nasa_source['rule_id']
+                    nasa = collect(nasa_source, sources.get('defaults', {}), settings, nasa_target, run_id)
+                    # NASA is evidence paired to the Windy threshold event, not a standalone map refresh.
+                    nasa['relevance'] = 'in_scope'
+                    nasa['event_status'] = 'candidate'
+                    try:
+                        make_cards(nasa, nasa_target, settings)
+                        nasa['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in nasa['cards']}
+                    except Exception as exc:
+                        nasa['card_error'] = type(exc).__name__
+                    store.record(nasa, nasa_target / 'result.json', 'all', destination(config))
+                    results.append(nasa)
+                    state['total'] += 1
+                    state['completed'] += 1
                 results.append(result)
                 state['completed'] += 1
-                state['errors'] += int(result['result'] == 'unknown' or not result.get('cards'))
+                state['errors'] += int(result['result'] == 'unknown' or bool(result.get('card_error')))
                 write_json(folder / 'status.json', state)
-                cep_str = f" CEP=[{result['cep_engine']}]" if result.get('cep_engine') else " CEP=[静默未触发]"
-                print(f"[{state['completed']}/{len(selected)}] {result['source']['rule_id']} {result['result']} cards={len(result['cards'])}{cep_str}", flush=True)
-                if args.send and result.get('cep_engine'):
+                print(f"[{state['completed']}/{len(selected)}] {result['source']['rule_id']} {result['result']} cards={len(result['cards'])}", flush=True)
+                if args.send and settings.get('delivery_enabled', False):
                     with delivery_lock:
                         sub_stats = deliver(store, run_id, config, settings)
                         if 'delivery' not in state:
@@ -148,7 +154,7 @@ def fast_run(args, settings, sources, config, store, data):
                     snapshot = folder / f'{run_id}-result.json'
                     store.record(result, snapshot, 'changed', destination(config))
                     print(f"[fast {stamp[11:19]}] {source['rule_id']} {result['result']} changed=True", flush=True)
-                    if result.get('cards'):
+                    if result.get('cards') and settings.get('delivery_enabled', False):
                         stats = deliver(store, run_id, config, settings)
                         print(f"[fast] delivered {stats}", flush=True)
                 else:
@@ -195,7 +201,7 @@ def main(argv=None):
     config = read_json(config_path) if config_path.exists() else {}
     needs_channel = args.command in ('deliver', 'fast') or getattr(args, 'send', False)
     if needs_channel and not destination(config):
-        parser.error('Server 酱尚未配置')
+        parser.error('通知渠道尚未配置（Server 酱或微信公众平台）')
     if args.command == 'fast':
         # The fast channel runs continuously; it uses its own lock so the normal
         # cadence loop can still run. SQLite WAL keeps concurrent writes safe.
