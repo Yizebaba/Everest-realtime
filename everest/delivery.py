@@ -115,7 +115,7 @@ def _deploy_to_github_pages(file_name, html_content, config):
     return None
 
 
-def _upload_github_image(path, config):
+def _upload_github_image(path, config, file_prefix=''):
     p = Path(path)
     gh = config.get('github_pages') or {}
     owner = gh.get('owner', 'Yizebaba')
@@ -138,11 +138,13 @@ def _upload_github_image(path, config):
     }
     file_bytes = p.read_bytes()
     content_b64 = base64.b64encode(file_bytes).decode('utf-8')
-    rel_path = f"evidence/images/{p.name}"
+    prefix = (file_prefix.rstrip('_') + '_') if file_prefix else ''
+    clean_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', f"{prefix}{p.name}")
+    rel_path = f"evidence/images/{clean_name}"
     url = f"https://api.github.com/repos/{owner}/{repo}/contents/{rel_path}"
     get_res = requests.get(url, headers=headers)
     sha = get_res.json().get('sha') if get_res.status_code == 200 else None
-    payload = {'message': f'upload: evidence image {p.name}', 'content': content_b64}
+    payload = {'message': f'upload: evidence image {clean_name}', 'content': content_b64}
     if sha:
         payload['sha'] = sha
     put_res = requests.put(url, headers=headers, json=payload, timeout=30)
@@ -151,31 +153,13 @@ def _upload_github_image(path, config):
     raise ValueError(f"GitHub image upload failed: {put_res.status_code}")
 
 
-def upload(path, settings, config=None):
-    """Upload via official GitHub Pages repository exclusively."""
+def upload(path, settings, config=None, file_prefix=''):
+    """Upload via official GitHub Pages repository exclusively. No external fallbacks."""
     if not settings.get('delivery_enabled', False):
         raise ValueError('External media delivery is disabled; evidence remains local')
-    if config and config.get('github_pages'):
-        try:
-            result = _upload_github_image(path, config)
-            if result and result.startswith('https://'):
-                return result
-        except Exception as exc:
-            print(f'GitHub image upload warning: {exc}', flush=True)
-    hosts = [(_upload_uguu, settings.get('image_upload_url')),
-             (_upload_tmpfiles, settings.get('image_upload_fallback'))]
-    errors = []
-    for func, url in hosts:
-        if not url:
-            continue
-        try:
-            result = func(path, settings)
-            if not result.startswith('https://'):
-                raise ValueError('Image URL must be HTTPS')
-            return result
-        except Exception as exc:
-            errors.append(type(exc).__name__)
-    raise ValueError('All image hosts failed: ' + ', '.join(errors))
+    if not (config and config.get('github_pages')):
+        raise ValueError('GitHub Pages configuration missing')
+    return _upload_github_image(path, config, file_prefix=file_prefix)
 
 
 def _send_serverchan(config, title, text):
@@ -318,10 +302,14 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             for p in cards:
                 if hashlib.sha256(Path(p).read_bytes()).hexdigest() != hashes.get(p):
                     raise ValueError('Card hash mismatch')
+            clean_prefix = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', f"{notice['run_id']}_{notice['rule_id']}")
             try:
-                urls = [uploader(p, settings, config) for p in cards]
+                urls = [uploader(p, settings, config, file_prefix=clean_prefix) for p in cards]
             except TypeError:
-                urls = [uploader(p, settings) for p in cards]
+                try:
+                    urls = [uploader(p, settings, config) for p in cards]
+                except TypeError:
+                    urls = [uploader(p, settings) for p in cards]
         except Exception as exc:
             store.update_notice(key, 'blocked', 'media_failed:'+type(exc).__name__)
             stats['blocked'] += 1
@@ -372,24 +360,22 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             })
 
         # Publish HTML evidence page to GitHub Pages
-        final_jump_urls = urls
-        try:
-            html_content = render_notification_page(
-                title=f"产品名称 · {source['name']}",
-                source_url=source_url,
-                time_str=retrieved_raw or now(),
-                image_cards=evidence_cards,
-                signature=SIGNATURE
-            )
-            clean_key = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', key)
-            file_name = f"{clean_key}_{int(time.time())}.html"
-            gh_page_url = _deploy_to_github_pages(file_name, html_content, config)
-            if gh_page_url:
-                final_jump_urls = [gh_page_url]
-            else:
-                print('GitHub Pages deploy returned None, check token/repo permissions', flush=True)
-        except Exception as exc:
-            print(f"GitHub Pages deploy note: {exc}", flush=True)
+        html_content = render_notification_page(
+            title=f"产品名称 · {source['name']}",
+            source_url=source_url,
+            time_str=retrieved_raw or now(),
+            image_cards=evidence_cards,
+            signature=SIGNATURE
+        )
+        clean_key = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', key)
+        file_name = f"{clean_key}_{int(time.time())}.html"
+        gh_page_url = _deploy_to_github_pages(file_name, html_content, config)
+        if gh_page_url:
+            final_jump_urls = [gh_page_url]
+        elif config.get('github_pages'):
+            raise ValueError('GitHub Pages evidence page deploy failed; sending blocked to avoid raw image leak')
+        else:
+            final_jump_urls = urls
 
         store.update_notice(key, 'sending')
         try:
