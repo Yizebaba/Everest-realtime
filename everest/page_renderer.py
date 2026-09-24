@@ -135,11 +135,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         }}
 
         .event-title-main {{
-            font-size: 26px;
-            font-weight: 900;
+            font-size: 17px;
+            font-weight: 800;
             color: var(--text-title);
-            letter-spacing: -0.5px;
-            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+            margin-bottom: 6px;
         }}
 
         .event-title-main a {{
