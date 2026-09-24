@@ -8,7 +8,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         'layer_en': 'MODIS Terra True Color',
         'layer_index': 1,
         'layer_total': 3,
-        'image_url': 'https://...'
+        'image_url': 'https://...',
+        'layer_target_url': 'https://...' (optional target url, default to source_url)
     }
     """
     esc = html.escape
@@ -28,12 +29,14 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             en = ""
             idx = i
             tot = total
+            jump_url = source_url
         else:
             img_url = card.get('image_url', '')
             cn = card.get('layer_cn', '')
             en = card.get('layer_en', '')
             idx = card.get('layer_index', i)
             tot = card.get('layer_total', total)
+            jump_url = card.get('layer_target_url') or source_url
         
         badge_html = ""
         if cn or en:
@@ -57,11 +60,10 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         <div class="card-box">
             {badge_html}
             <div class="img-wrapper">
-                <a href="{esc(img_url)}" target="_blank" title="点击查看原始高清图">
+                <a href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">
                     <img loading="lazy" src="{esc(img_url)}" alt="{title_esc} 截图" />
                 </a>
             </div>
-            <div class="img-caption">轻触图片可全屏查看大图，长按可保存分享</div>
             {sig_block}
         </div>
         ''')
@@ -176,6 +178,10 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             padding: 2px 8px;
             border-radius: 4px;
         }}
+        .img-wrapper a {{
+            display: block;
+            cursor: pointer;
+        }}
         .img-wrapper img {{
             width: 100%;
             height: auto;
@@ -183,20 +189,18 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             border-radius: 8px;
             border: 1px solid #334155;
             background: #020617;
+            transition: opacity 0.2s;
         }}
-        .img-caption {{
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 8px;
+        .img-wrapper a:hover img {{
+            opacity: 0.92;
         }}
         .footer {{
             text-align: center;
             font-size: 13px;
             color: #94a3b8;
-            padding-top: 14px;
+            padding: 24px 0 14px;
             border-top: 1px solid #1e293b;
-            margin-top: 14px;
+            margin-top: 24px;
             font-weight: 500;
         }}
     </style>
@@ -234,6 +238,7 @@ def build_evidence_page(title, source_url, time_str, image_urls, layer_names=Non
             'layer_en': '',
             'layer_index': i + 1,
             'layer_total': len(image_urls),
-            'image_url': u
+            'image_url': u,
+            'layer_target_url': source_url
         })
     return render_notification_page(title, source_url, time_str, cards, signature)
