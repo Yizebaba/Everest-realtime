@@ -9,7 +9,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         'layer_index': 1,
         'layer_total': 3,
         'image_url': 'https://...',
-        'layer_target_url': 'https://...' (optional target url, default to source_url)
+        'layer_target_url': 'https://...' (target url to open when clicking the layer title)
     }
     """
     esc = html.escape
@@ -43,14 +43,14 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             label_text = f"{cn} · {en}" if (cn and en) else (cn or en)
             badge_html = f'''
             <div class="layer-header">
-                <div class="layer-name">{esc(label_text)}</div>
+                <a class="layer-name-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer" title="点击打开图层对应官方网页">{esc(label_text)}</a>
                 <div class="layer-index">图层 {idx} / {tot}</div>
             </div>
             '''
         elif is_multi:
             badge_html = f'''
             <div class="layer-header">
-                <div class="layer-name">图层 {idx}</div>
+                <a class="layer-name-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer" title="点击打开图层对应官方网页">图层 {idx}</a>
                 <div class="layer-index">图层 {idx} / {tot}</div>
             </div>
             '''
@@ -60,9 +60,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         <div class="card-box">
             {badge_html}
             <div class="img-wrapper">
-                <a href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">
-                    <img loading="lazy" src="{esc(img_url)}" alt="{title_esc} 截图" />
-                </a>
+                <img loading="lazy" src="{esc(img_url)}" alt="{title_esc} 截图" />
             </div>
             {sig_block}
         </div>
@@ -111,6 +109,15 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-size: 20px;
             color: #38bdf8;
             font-weight: 700;
+        }}
+        .title-link {{
+            color: #38bdf8;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            cursor: pointer;
+        }}
+        .title-link:hover {{
+            color: #7dd3fc;
         }}
         .multi-tag {{
             background: rgba(56, 189, 248, 0.15);
@@ -164,11 +171,17 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             flex-wrap: wrap;
             gap: 8px;
         }}
-        .layer-name {{
-            color: #f8fafc;
+        .layer-name-link {{
+            color: #38bdf8;
             font-size: 15px;
             font-weight: 700;
             letter-spacing: 0.3px;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+        }}
+        .layer-name-link:hover {{
+            color: #7dd3fc;
         }}
         .layer-index {{
             background: #334155;
@@ -178,10 +191,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             padding: 2px 8px;
             border-radius: 4px;
         }}
-        .img-wrapper a {{
-            display: block;
-            cursor: pointer;
-        }}
         .img-wrapper img {{
             width: 100%;
             height: auto;
@@ -189,10 +198,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             border-radius: 8px;
             border: 1px solid #334155;
             background: #020617;
-            transition: opacity 0.2s;
-        }}
-        .img-wrapper a:hover img {{
-            opacity: 0.92;
+            /* Pure image view: no link wrapping on screenshot */
+            cursor: default;
         }}
         .footer {{
             text-align: center;
@@ -209,7 +216,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
     <div class="container">
         <div class="top-panel">
             <div class="title-bar">
-                <h1>{title_esc}</h1>
+                <h1><a class="title-link" href="{url_esc}" target="_blank" rel="noopener noreferrer">{title_esc}</a></h1>
                 {multi_badge}
             </div>
             <div class="meta-line">
