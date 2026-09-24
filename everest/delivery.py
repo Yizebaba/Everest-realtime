@@ -84,7 +84,7 @@ def _deploy_to_github_pages(file_name, html_content, config):
     gh = config.get('github_pages') or {}
     owner = gh.get('owner', 'Yizebaba')
     repo = gh.get('repo', 'Everest-realtime')
-    base_url = gh.get('base_url', f"https://{owner}.github.io/{repo}").rstrip('/')
+    base_url = gh.get('base_url', f"https://raw.githubusercontent.com/{owner}/{repo}/main").rstrip('/')
     token = gh.get('token')
     if not token:
         token_file = Path('/app/github_token.txt')
@@ -120,7 +120,7 @@ def _upload_github_image(path, config):
     gh = config.get('github_pages') or {}
     owner = gh.get('owner', 'Yizebaba')
     repo = gh.get('repo', 'Everest-realtime')
-    base_url = gh.get('base_url', f"https://{owner}.github.io/{repo}").rstrip('/')
+    base_url = gh.get('base_url', f"https://raw.githubusercontent.com/{owner}/{repo}/main").rstrip('/')
     token = gh.get('token')
     if not token:
         token_file = Path('/app/github_token.txt')
