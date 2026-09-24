@@ -111,12 +111,14 @@ LAYER_NAMES = {
 
 def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None, include_signature=True):
     """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom if required."""
-    sig = 'WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+    sig_zh = 'WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+    sig_en = 'WeChat: No1-Shine ｜ Mt. Everest Natural Environment Information Monitoring System [Beta]'
+    sig_ne = 'WeChat: No1-Shine ｜ सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)'
     font_file = font_path or os.environ.get('EVEREST_FONT', 'C:/Windows/Fonts/msyh.ttc')
     # Enlarged high-visibility font sizes for phone screens
     font_size = max(26, int(image.width * 0.026))
     title_size = max(30, int(image.width * 0.030))
-    footer_size = max(24, int(image.width * 0.024))
+    footer_size = max(20, int(image.width * 0.020))
     try:
         font = ImageFont.truetype(font_file, font_size)
         title_font = ImageFont.truetype(font_file, title_size)
@@ -140,7 +142,9 @@ def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='
     header_pad = int(font_size * 1.0)
     header_h = header_pad * 2 + len(lines) * line_h
 
-    banner_h = int(footer_size * 3.2) if include_signature else 0
+    # 3-line footer banner at bottom of image
+    footer_line_h = int(footer_size * 1.6)
+    banner_h = int(footer_line_h * 3 + footer_size * 1.2) if include_signature else 0
     total_h = header_h + image.height + banner_h
 
     out_img = Image.new('RGB', (image.width, total_h), '#0f172a')
@@ -156,16 +160,17 @@ def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='
     # Paste screenshot image
     out_img.paste(image, (0, header_h))
 
-    # Render bottom signature only on designated card
+    # Render bottom 3-line signature only on designated card
     if include_signature:
         footer_top = header_h + image.height
         draw.line([(0, footer_top), (image.width, footer_top)], fill='#334155', width=2)
-        bbox = draw.textbbox((0, 0), sig, font=footer_font)
-        text_w = bbox[2] - bbox[0]
-        text_h = bbox[3] - bbox[1]
-        x = max(10, (image.width - text_w) // 2)
-        y = footer_top + (banner_h - text_h) // 2
-        draw.text((x, y), sig, fill='#cbd5e1', font=footer_font)
+        y_pos = footer_top + int(footer_size * 0.6)
+        for sig_text, sig_color in [(sig_zh, '#cbd5e1'), (sig_en, '#94a3b8'), (sig_ne, '#64748b')]:
+            bbox = draw.textbbox((0, 0), sig_text, font=footer_font)
+            text_w = bbox[2] - bbox[0]
+            x = max(10, (image.width - text_w) // 2)
+            draw.text((x, y_pos), sig_text, fill=sig_color, font=footer_font)
+            y_pos += footer_line_h
 
     return out_img
 
