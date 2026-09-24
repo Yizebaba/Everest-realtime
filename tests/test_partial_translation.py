@@ -29,10 +29,10 @@ def test_partial_translation_failure_keeps_successful_pages(monkeypatch, tmp_pat
     record = _record()
     make_cards(record, tmp_path, {'translate_screenshots': True, 'screenshots': False,
                                   'max_translated_pages': 3})
-    # The homepage translated, so we still produce a card and record the other page's error.
+    # One notification uses only the first key page, so later pages are not translated.
     assert record['cards'], 'a successful translation must still be delivered'
     assert record['image_kind'] == 'translated_source_screenshot'
-    assert any('ValueError' in e for e in record['translation_errors'])
+    assert record['translation_errors'] == []
 
 
 def test_all_translations_failing_falls_back_to_original(monkeypatch, tmp_path):
@@ -80,4 +80,4 @@ def test_max_translated_pages_caps_work(monkeypatch, tmp_path):
     record = _record()
     make_cards(record, tmp_path, {'translate_screenshots': True, 'screenshots': False,
                                   'max_translated_pages': 2})
-    assert len(calls) == 2
+    assert len(calls) == 1
