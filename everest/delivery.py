@@ -334,6 +334,36 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
             text += '\n\n'.join(f'![{label} {i+1}]({url})' for i,url in enumerate(urls)) + '\n\n'
         text += SIGNATURE
 
+        # Construct evidence cards list for HTML view
+        evidence_cards = []
+        is_map_view = (record.get('image_kind') == 'everest_map_view')
+        total_imgs = len(urls)
+        for idx, u in enumerate(urls, 1):
+            cn_title = layer_names_list[idx - 1] if (is_map_view and idx - 1 < len(layer_names_list)) else ""
+            evidence_cards.append({
+                'layer_cn': cn_title,
+                'layer_en': '',
+                'layer_index': idx,
+                'layer_total': total_imgs,
+                'image_url': u,
+                'layer_target_url': source_url
+            })
+
+        # Save HTML evidence view locally for historical auditing
+        try:
+            html_content = render_notification_page(
+                title=f"产品名称 · {source['name']}",
+                source_url=source_url,
+                time_str=retrieved_raw or now(),
+                image_cards=evidence_cards,
+                signature=SIGNATURE
+            )
+            evidence_dir = Path('/app/data/evidence')
+            evidence_dir.mkdir(parents=True, exist_ok=True)
+            (evidence_dir / f"{key}.html").write_text(html_content, encoding='utf-8')
+        except Exception as exc:
+            print(f"Local evidence render note: {exc}", flush=True)
+
         store.update_notice(key, 'sending')
         try:
             try:
