@@ -13,8 +13,9 @@ import time
 from pathlib import Path
 
 from everest.core import now, write_json
+from everest.retention import cleanup_runs
 
-TICK = int(os.environ.get('EVEREST_TICK_SECONDS', '180'))
+TICK = int(os.environ.get('EVEREST_TICK_SECONDS', '300'))
 FAST = os.environ.get('EVEREST_FAST_ENABLED', 'true').lower() not in ('0', 'false', 'no')
 
 
@@ -33,10 +34,13 @@ while True:
     if fast_proc is not None and not fast_alive:
         fast_proc = start_fast()
         fast_alive = True
+    removed_runs = cleanup_runs(Path('data'), os.environ.get('EVEREST_RUN_RETENTION_HOURS', '48'))
     write_json(Path('data/worker.json'), {
         'checked_at': now(),
         'exit_code': completed.returncode,
         'fast_channel_alive': fast_alive,
         'tick_seconds': TICK,
+        'run_retention_hours': int(os.environ.get('EVEREST_RUN_RETENTION_HOURS', '48')),
+        'removed_runs': removed_runs,
     })
-    time.sleep(max(10, TICK))
+    time.sleep(max(30, TICK))
