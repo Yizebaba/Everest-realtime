@@ -1,0 +1,14 @@
+{
+  "run_id": "20260924T074359Z-6b145e",
+  "report": "/app/data/runs/20260924T074359Z-6b145e/index.html",
+  "phase": "completed",
+  "total": 1,
+  "completed": 1,
+  "errors": 0,
+  "exit_code": 0,
+  "delivery": {
+    "accepted": 0,
+    "blocked": 0,
+    "unconfirmed": 0
+  }
+}
