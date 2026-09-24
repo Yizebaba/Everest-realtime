@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
-    <title>QOMOLANGMA / SAGARMATHA / 珠穆朗玛 · 国际自然环境监测通报</title>
-    <!-- World Standard Typography -->
+    <title>产品名称 · NASA 珠峰多要素卫星遥感观测</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-page: #ffffff;
@@ -26,28 +25,21 @@
         body {
             background-color: var(--bg-page);
             color: var(--text-body);
-            font-family: 'Inter', 'Noto Sans SC', 'Noto Sans Devanagari', -apple-system, sans-serif;
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
             padding: 24px 20px 60px;
             line-height: 1.6;
         }
 
-        /* 整体容器：彻底放宽至 1120px */
         .container {
             max-width: 1120px;
             margin: 0 auto;
         }
 
-        /* 顶部机构标头 */
+        /* 顶部机构标头（取消第三行，仅保留纯净单行英文） */
         .world-topbar {
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-line);
             margin-bottom: 28px;
-        }
-
-        .world-names {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
         }
 
         .name-en {
@@ -60,17 +52,7 @@
             line-height: 1.2;
         }
 
-        .name-dual {
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .name-dual span {
-            color: var(--accent-blue);
-        }
-
-        /* 背景放宽拉满，内部文字加上左侧 padding-left: 28px 向右内收，回到之前视觉舒服的位置 */
+        /* 主标题区域：底色放宽，文字向右内收 28px，取消尼泊尔语 */
         .event-card {
             background: var(--bg-muted);
             border: none;
@@ -87,7 +69,7 @@
             font-weight: 900;
             color: var(--text-title);
             letter-spacing: -0.5px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .event-title-main a {
@@ -100,9 +82,8 @@
         }
 
         .intl-subtitle-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 6px;
+            display: flex;
+            align-items: center;
         }
 
         .sub-item {
@@ -129,16 +110,10 @@
             font-weight: 500;
         }
 
-        .sub-text-ne {
-            color: var(--text-muted);
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            font-weight: 600;
-        }
-
-        /* 来源/时间/范围区域横向彻底放宽 */
+        /* 来源/时间：横向放宽，取消 Scope（范围） */
         .meta-metrics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
             background: transparent;
             border: none;
@@ -175,7 +150,7 @@
             text-underline-offset: 3px;
         }
 
-        /* 图层流容器 */
+        /* 图层流 */
         .layer-flow {
             display: flex;
             flex-direction: column;
@@ -190,7 +165,6 @@
             box-shadow: none;
         }
 
-        /* 图层横向平铺标头 */
         .flow-header {
             display: flex;
             justify-content: space-between;
@@ -234,13 +208,6 @@
             font-weight: 500;
         }
 
-        .lang-ne-text {
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-        }
-
         .flow-index-tag {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 12px;
@@ -267,7 +234,7 @@
             display: block;
         }
 
-        /* 页面底部署名 */
+        /* 页面底部署名：中英双语，取消尼泊尔语 */
         .footer-banner {
             margin-top: 50px;
             padding: 24px 16px 12px;
@@ -286,30 +253,17 @@
         .ft-sub {
             font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .ft-nepali {
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            font-size: 13px;
-            color: var(--text-light);
-            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 顶部机构名 -->
+        <!-- 顶部机构名（纯净单行英文） -->
         <header class="world-topbar">
-            <div class="world-names">
-                <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
-                <div class="name-dual">
-                    <span>珠穆朗玛峰</span> · <span>सगरमाथा</span> · <span>CHOMOLUNGMA</span>
-                </div>
-            </div>
+            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
         </header>
 
-        <!-- 背景放宽不动，内部文字向右内收 28px，完美回到舒服的黄金比例位置 -->
+        <!-- 主标题区域：底色放宽，文字向右内收 28px，仅保留中英双语 -->
         <section class="event-card">
             <h1 class="event-title-main">
                 <a href="https://worldview.earthdata.nasa.gov/" target="_blank">产品名称 · NASA 珠峰多要素卫星遥感观测</a>
@@ -319,73 +273,60 @@
                     <span class="sub-tag">English</span>
                     <span class="sub-text-en">NASA Earth Observatory Spaceborne Telemetry Array</span>
                 </div>
-                <div class="sub-item">
-                    <span class="sub-tag">नेपाली</span>
-                    <span class="sub-text-ne">नासा पृथ्वी वेधशाला अन्तरिक्ष-आधारित टेलिमेट्री अनुगमन</span>
-                </div>
             </div>
         </section>
 
-        <!-- 来源/时间/范围：同样彻底放宽 -->
+        <!-- 来源/时间：横向放宽，取消 Scope（范围） -->
         <div class="meta-metrics">
             <div class="metric">
-                <span class="metric-label">Source / स्रोत लिङ्क</span>
+                <span class="metric-label">Source</span>
                 <span class="metric-val">
-                    <a href="https://worldview.earthdata.nasa.gov/" target="_blank">worldview.earthdata.nasa.gov</a>
+                    <a href="https://worldview.earthdata.nasa.gov/" target="_blank">https://worldview.earthdata.nasa.gov/</a>
                 </span>
             </div>
             <div class="metric">
-                <span class="metric-label">Observed Time / अवलोकन समय</span>
+                <span class="metric-label">Observed Time</span>
                 <span class="metric-val">2026-09-24T17:45:00Z (UTC)</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Scope / निगरानी क्षेत्र</span>
-                <span class="metric-val">珠峰-昆布冰冻圈 / Everest-Khumbu Cryosphere</span>
             </div>
         </div>
 
-        <!-- 多图层流：横向大跨度放开 -->
+        <!-- 多图层流 -->
         <main class="layer-flow">
-            <!-- 图层 1 -->
-            <article class="flow-card">
-                <div class="flow-header">
-                    <div class="layer-heading-row">
-                        <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/" target="_blank">MODIS Terra 真彩色遥感底图</a>
-                        <span class="divider-slash">/</span>
-                        <span class="lang-en-text">MODIS Terra Corrected Reflectance (True Color)</span>
-                        <span class="divider-slash">/</span>
-                        <span class="lang-ne-text">मोडिस टेरा वास्तविक रङ उपग्रह छवि</span>
-                    </div>
-                    <div class="flow-index-tag">LAYER 01 / 02</div>
-                </div>
-                <div class="flow-image-box">
-                    <img loading="lazy" src="https://i.ibb.co/RTbfZjBk/mapview-wind.png" alt="Layer 1" />
-                </div>
-            </article>
-
-            <!-- 图层 2 -->
-            <article class="flow-card">
-                <div class="flow-header">
-                    <div class="layer-heading-row">
-                        <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/" target="_blank">MODIS 积雪覆盖与冰川反射 (NDSI)</a>
-                        <span class="divider-slash">/</span>
-                        <span class="lang-en-text">Snow Cover & Glacier Reflectance (NDSI)</span>
-                        <span class="divider-slash">/</span>
-                        <span class="lang-ne-text">हिउँ कभर र हिमनदी परावर्तन (NDSI)</span>
-                    </div>
-                    <div class="flow-index-tag">LAYER 02 / 02</div>
-                </div>
-                <div class="flow-image-box">
-                    <img loading="lazy" src="https://i.ibb.co/ZR0bT05z/mapview-clouds.png" alt="Layer 2" />
-                </div>
-            </article>
+            
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">真彩色遥感底图</a><span class="divider-slash">/</span><span class="lang-en-text">MODIS Terra True Color</span>
+            </div>
+            <div class="flow-index-tag">LAYER 01 / 02</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://i.ibb.co/RTbfZjBk/mapview-wind.png" alt="产品名称 · NASA 珠峰多要素卫星遥感观测 监测截图 1" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">积雪覆盖与冰川反射 (NDSI)</a><span class="divider-slash">/</span><span class="lang-en-text">Snow Cover &amp; Glacier Reflectance (NDSI)</span>
+            </div>
+            <div class="flow-index-tag">LAYER 02 / 02</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://i.ibb.co/ZR0bT05z/mapview-clouds.png" alt="产品名称 · NASA 珠峰多要素卫星遥感观测 监测截图 2" />
+            </div>
+        </article>
+        
         </main>
 
-        <!-- 页面最底部细线署名 -->
+        <!-- 页面最底部细线署名：取消尼泊尔语 -->
         <footer class="footer-banner">
             <div class="ft-lead">vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
             <div class="ft-sub">Qomolangma Multi-Hazard Monitoring & Observation Platform</div>
-            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>
