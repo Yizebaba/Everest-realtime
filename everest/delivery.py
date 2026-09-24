@@ -365,10 +365,13 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
                 image_cards=evidence_cards,
                 signature=SIGNATURE
             )
-            file_name = f"{key}_{int(time.time())}.html"
+            clean_key = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', key)
+            file_name = f"{clean_key}_{int(time.time())}.html"
             gh_page_url = _deploy_to_github_pages(file_name, html_content, config)
             if gh_page_url:
                 final_jump_urls = [gh_page_url]
+            else:
+                print('GitHub Pages deploy returned None, check token/repo permissions', flush=True)
         except Exception as exc:
             print(f"GitHub Pages deploy note: {exc}", flush=True)
 
