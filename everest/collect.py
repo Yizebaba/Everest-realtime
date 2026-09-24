@@ -9,8 +9,35 @@ from bs4 import BeautifulSoup
 
 from .core import now
 from .filters import structured_match
-from .discovery import discover, feed_links, article_metadata
+from .discovery import discover, feed_links, article_metadata, news_direct_event
 from urllib.parse import urlsplit
+
+
+SCOPE_TERMS = (
+    'everest', 'qomolangma', 'sagarmatha', 'khumbu', 'solukhumbu',
+    'himalaya', 'himalayan', 'nepal', 'tibet', 'xizang', 'bhutan',
+    'sikkim', 'uttarakhand', '珠峰', '珠穆朗玛', '喜马拉雅', '尼泊尔',
+    '西藏', '日喀则', '定日', '吉隆', '樟木', '亚东',
+)
+
+
+def classify_matches(source, matches):
+    """Separate locally relevant event candidates from raw source content."""
+    if source.get('category_id') == 'satellite':
+        return [], 'out_of_scope', 'product_update'
+    if source.get('category_id') == 'news':
+        scoped = [item for item in matches if news_direct_event(item)]
+        if not scoped:
+            return [], 'out_of_scope', 'not_event'
+        return list(dict.fromkeys(scoped)), 'in_scope', 'candidate'
+    source_text = ' '.join(str(source.get(key, '')) for key in ('name', 'url', 'note')).lower()
+    source_in_scope = any(term.lower() in source_text for term in SCOPE_TERMS)
+    scoped = [item for item in matches if any(term.lower() in item.lower() for term in SCOPE_TERMS)]
+    if source_in_scope:
+        scoped = matches
+    if not scoped:
+        return [], 'out_of_scope', 'not_event'
+    return list(dict.fromkeys(scoped)), 'in_scope', 'candidate'
 
 
 def select_path(value, path):
@@ -36,6 +63,8 @@ def extract(body, ctype, source, defaults, encoding=None):
             obj = obj['features']
         elif isinstance(obj, dict) and isinstance(obj.get('feed'), dict) and isinstance(obj['feed'].get('entry'), list):
             obj = obj['feed']['entry']
+        elif isinstance(obj, dict) and isinstance(obj.get('data'), list):
+            obj = obj['data']
         items = obj if isinstance(obj, list) else [obj]
         content = [json.dumps(item, ensure_ascii=False, sort_keys=True) for item in items
                    if structured_match(item, watch.get('structured', {}))]
@@ -112,9 +141,9 @@ def fetch_page(url, settings):
 def collect(source, defaults, settings, folder, run_id):
     folder.mkdir(parents=True, exist_ok=True)
     result = {'source': source, 'run_id': run_id, 'result': 'unknown', 'retrieved_at': now(),
-              'source_time': None, 'content': [], 'matches': [], 'cards': [], 'error': '',
-              'pages': [], 'network_records': [], 'map_images': [], 'article_records': [],
-              'acquisition_errors': [], 'pending_urls': []}
+               'source_time': None, 'content': [], 'matches': [], 'cards': [], 'error': '',
+               'pages': [], 'network_records': [], 'map_images': [], 'article_records': [],
+               'acquisition_errors': [], 'pending_urls': [], 'alert_screenshots': []}
     try:
         plan = settings.get('source_plans', {}).get(source['rule_id'], {})
         lightweight = bool(source.get('lightweight'))
@@ -140,7 +169,10 @@ def collect(source, defaults, settings, folder, run_id):
                 if 'html' in ctype and settings.get('render_html') and not lightweight:
                     from .browser import render
                     try:
-                        rendered = render(url,target,settings,map_source)
+                        render_options = {}
+                        if (source.get('category_id') == 'news' or source['rule_id'] == 'weather-03') and entry['kind'] == 'root':
+                            render_options['capture_screenshot'] = False
+                        rendered = render(url, target, settings, map_source, **render_options)
                         body = rendered.pop('dom')
                         final_url = rendered['final_url']
                         if entry['kind']=='root':
@@ -157,12 +189,27 @@ def collect(source, defaults, settings, folder, run_id):
                     else: raise
                 result['title'] = result.get('title') or title
                 result['content'].extend(content); result['matches'].extend(matches)
+                if source.get('category_id') == 'news' and entry['kind'] == 'matched_article':
+                    screenshot = target / 'page.png'
+                    article_text = ' '.join(content)
+                    if news_direct_event(article_text) and screenshot.is_file():
+                        result['alert_screenshots'].append(str(screenshot))
+                if source['rule_id'] == 'weather-03':
+                    if entry['kind'] == 'root':
+                        result['matches'] = []
+                    elif entry['kind'] == 'nmc_alert':
+                        screenshot = target / 'page.png'
+                        if screenshot.is_file():
+                            result['alert_screenshots'].append(str(screenshot))
                 if source_time: result['source_time']=source_time
                 result['pages'].append({'url':final_url,'kind':entry['kind'],'content_type':ctype,'retrieved_at':now(),'items':len(content)})
                 if 'html' in ctype:
                     result['article_records'].append(article_metadata(body,final_url))
                     if not lightweight:
-                        queue.extend(discover(body,final_url,settings))
+                        queue.extend(discover(
+                            body, final_url, settings,
+                            news_only=source.get('category_id') == 'news',
+                            nmc_alerts_only=source['rule_id'] == 'weather-03'))
                 elif any(x in ctype for x in ('rss','atom','xml')):
                     articles=feed_links(body,final_url)
                     result['article_records'].extend(articles)
@@ -191,25 +238,27 @@ def collect(source, defaults, settings, folder, run_id):
             except Exception as exc:
                 result['acquisition_errors'].append({'stage':'wms','error':type(exc).__name__})
         from .mapviews import capture_views
-        views = [] if lightweight else capture_views(source['rule_id'], folder, settings, settings.get('_root', '.'))
+        defer_views = source['rule_id'] in settings.get('defer_map_views_for', [])
+        views = [] if lightweight or defer_views else capture_views(source['rule_id'], folder, settings, settings.get('_root', '.'))
         if views:
             result['map_views'] = views
             for view in views:
                 if view['error']:
                     result['acquisition_errors'].append({'stage':'map_view','layer':view['layer'],'error':view['error']})
-                else:
-                    result['matches'].append(json.dumps({'layer':view['layer'],'view_url':view['view_url'],
-                        'everest_center':view['everest_center'],'captured_at':view['captured_at']},ensure_ascii=False,sort_keys=True))
             if any(view['image'] for view in views):
                 result['result'] = 'found'
         result['content']=list(dict.fromkeys(result['content']))
         result['matches']=list(dict.fromkeys(result['matches']))
+        has_content_match = bool(result['matches'])
+        result['matches'], result['relevance'], result['event_status'] = classify_matches(source, result['matches'])
         result['coverage']='partial' if result['pending_urls'] or result['acquisition_errors'] else 'complete_for_requested_pages'
         if result['pages'] or result['map_images'] or result.get('map_views'):
-            result['result']='found' if result['matches'] or result['map_images'] else 'not_found'
+            result['result']='found' if has_content_match or result['map_images'] else 'not_found'
         else:
             result['error']='No source data acquired'
     except Exception as exc:
         result['error'] = type(exc).__name__ + (': '+str(exc) if isinstance(exc, (ValueError, KeyError)) else '')
     result['retrieved_at'] = now()
+    result.setdefault('relevance', 'uncertain' if result['result'] == 'unknown' else 'out_of_scope')
+    result.setdefault('event_status', 'not_event')
     return result
