@@ -266,6 +266,12 @@ def collect(source, defaults, settings, folder, run_id):
             if any(view['image'] for view in views):
                 result['result'] = 'found'
         result['content']=list(dict.fromkeys(result['content']))
+        # Filter out noisy live webcam heartbeat and transient model query versions from Windy content diff
+        if source.get('rule_id') == 'weather-06':
+            result['content'] = [
+                c for c in result['content']
+                if '"cams":' not in c and '"ref":' not in c and '"update":' not in c
+            ]
         result['matches']=list(dict.fromkeys(result['matches']))
         has_content_match = bool(result['matches'])
         result['matches'], result['relevance'], result['event_status'] = classify_matches(source, result['matches'])
