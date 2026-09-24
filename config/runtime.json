@@ -48,5 +48,5 @@
     "precipitation_mm_min": 10,
     "temperature_drop_c_min": 5
   },
-  "defer_map_views_for": ["weather-06"]
+  "defer_map_views_for": []
 }
