@@ -109,8 +109,8 @@ LAYER_NAMES = {
 }
 
 
-def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None):
-    """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom."""
+def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None, include_signature=True):
+    """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom if required."""
     sig = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
     font_file = font_path or os.environ.get('EVEREST_FONT', 'C:/Windows/Fonts/msyh.ttc')
     # Enlarged high-visibility font sizes for phone screens
@@ -140,7 +140,7 @@ def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='
     header_pad = int(font_size * 1.0)
     header_h = header_pad * 2 + len(lines) * line_h
 
-    banner_h = int(footer_size * 3.2)
+    banner_h = int(footer_size * 3.2) if include_signature else 0
     total_h = header_h + image.height + banner_h
 
     out_img = Image.new('RGB', (image.width, total_h), '#0f172a')
@@ -156,21 +156,22 @@ def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='
     # Paste screenshot image
     out_img.paste(image, (0, header_h))
 
-    # Render bottom signature
-    footer_top = header_h + image.height
-    draw.line([(0, footer_top), (image.width, footer_top)], fill='#334155', width=2)
-    bbox = draw.textbbox((0, 0), sig, font=footer_font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    x = max(10, (image.width - text_w) // 2)
-    y = footer_top + (banner_h - text_h) // 2
-    draw.text((x, y), sig, fill='#cbd5e1', font=footer_font)
+    # Render bottom signature only on designated card
+    if include_signature:
+        footer_top = header_h + image.height
+        draw.line([(0, footer_top), (image.width, footer_top)], fill='#334155', width=2)
+        bbox = draw.textbbox((0, 0), sig, font=footer_font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
+        x = max(10, (image.width - text_w) // 2)
+        y = footer_top + (banner_h - text_h) // 2
+        draw.text((x, y), sig, fill='#cbd5e1', font=footer_font)
 
     return out_img
 
 
-def _append_signature_bar(image, font_path=None):
-    return _decorate_evidence_card(image, font_path=font_path)
+def _append_signature_bar(image, font_path=None, include_signature=True):
+    return _decorate_evidence_card(image, font_path=font_path, include_signature=include_signature)
 
 
 def make_cards(result, folder, settings):
@@ -188,13 +189,15 @@ def make_cards(result, folder, settings):
                 target = folder / f"mapview-{view['layer']}.png"
                 layer_cn = view.get('layer_name') or LAYER_NAMES.get(view['layer'], view['layer'])
                 layer_banner = f"珠峰视角图层（共 {total_layers} 层） | 第 {idx} 层：{layer_cn}"
+                is_last_card = (idx == total_layers)
                 with Image.open(view['image']) as img:
                     signed_img = _decorate_evidence_card(
                         img.convert('RGB'),
                         source_url=view.get('view_url') or result['source']['url'],
                         retrieved_at=result.get('retrieved_at'),
                         layer_title=layer_banner,
-                        font_path=settings.get('font')
+                        font_path=settings.get('font'),
+                        include_signature=is_last_card
                     )
                     signed_img.save(target)
                 result['cards'].append(str(target))
