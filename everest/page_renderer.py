@@ -2,7 +2,7 @@ import html
 
 def render_notification_page(title, source_url, time_str, image_cards, signature='vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
     """
-    World-Class Clean Style D (Bilingual Chinese & English, Devanagari/Nepali completely removed).
+    World-Class Clean Style D with a Nepali system subtitle.
     image_cards: list of dicts, each like:
     {
         'layer_cn': '真彩色遥感底图',
@@ -180,6 +180,12 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 500;
         }}
 
+        .sub-text-ne {{
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            color: var(--text-muted);
+            font-weight: 500;
+        }}
+
         /* 来源/时间：单行横排流动，来源在上，时间在下，不换行截断 */
         .meta-metrics {{
             display: flex;
@@ -305,7 +311,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             display: block;
         }}
 
-        /* 页面底部署名：中英双语，取消尼泊尔语 */
+        /* 页面底部署名：中文、英文和尼泊尔语使用同一署名。 */
         .footer-banner {{
             margin-top: 50px;
             padding: 24px 16px 12px;
@@ -343,7 +349,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
         </header>
 
-        <!-- 主标题区域：底色放宽，文字向右内收 28px，标题下方显示尼泊尔语官方名称 -->
+        <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
         <section class="event-card">
             <h1 class="event-title-main">
                 <a href="{url_esc}" target="_blank">{title_esc}</a>
@@ -356,7 +362,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             </div>
         </section>
 
-        <!-- 来源/时间：横向放宽，带标准冒号与空格 -->
+        <!-- 来源与观测时间。 -->
         <div class="meta-metrics">
             <div class="metric">
                 <span class="metric-label">来源：</span>
@@ -375,7 +381,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             {''.join(cards_html)}
         </main>
 
-        <!-- 页面最底部细线署名：中文、英文、尼泊尔语均统一包含 WeChat: No1-Shine -->
+        <!-- 页面最底部细线署名：中文、英文、尼泊尔语统一使用同一署名 -->
         <footer class="footer-banner">
             <div class="ft-lead">WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
             <div class="ft-sub">WeChat: No1-Shine ｜ Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
