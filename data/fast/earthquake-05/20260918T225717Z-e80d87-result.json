@@ -1,0 +1,85 @@
+{
+  "source": {
+    "category": "地震",
+    "category_id": "earthquake",
+    "name": "GEOFON 全球地震列表",
+    "rule_id": "earthquake-05",
+    "source_id": "earthquake-05",
+    "source_tier": "core",
+    "nature": "observation",
+    "url": "https://geofon.gfz.de/eqinfo/list.php",
+    "cadence_min": 15,
+    "enabled": true,
+    "interval_minutes": 15,
+    "note": "3秒快速通道：仅内容变化时发送，不做关键词过滤",
+    "interval_seconds": 3,
+    "lightweight": true
+  },
+  "run_id": "20260918T225717Z-e80d87",
+  "result": "unknown",
+  "retrieved_at": "2026-09-18T22:57:17.050678+00:00",
+  "source_time": null,
+  "content": [],
+  "matches": [],
+  "cards": [
+    "/app/data/fast/earthquake-05/chinese-01.png"
+  ],
+  "error": "No source data acquired",
+  "pages": [],
+  "network_records": [],
+  "map_images": [],
+  "article_records": [],
+  "acquisition_errors": [
+    {
+      "url": "https://geofon.gfz.de/eqinfo/list.php",
+      "stage": "fetch_parse",
+      "error": "ValueError"
+    }
+  ],
+  "pending_urls": [],
+  "content_type": "text/html",
+  "final_url": "https://geofon.gfz.de/eqinfo/list.php",
+  "raw_path": "/app/data/fast/earthquake-05/response.bin",
+  "coverage": "partial",
+  "image_kind": "translated_source_screenshot",
+  "screenshot_error": "",
+  "original_capture": {
+    "captured_at": "2026-09-18T22:57:23.390419+00:00",
+    "final_url": "https://geofon.gfz.de/eqinfo/list.php",
+    "cleaned": {
+      "ads_hidden": 0,
+      "chrome_hidden": 2,
+      "sticky_hidden": 0,
+      "legal_hidden": 1
+    }
+  },
+  "original_screenshots": [
+    "/app/data/fast/earthquake-05/source-original.png"
+  ],
+  "translations": [
+    {
+      "provider": "Google Translate website widget (in-place)",
+      "source_url": "https://geofon.gfz.de/eqinfo/list.php",
+      "target_language": "zh-CN",
+      "captured_at": "2026-09-18T22:57:41.870550+00:00",
+      "machine_translation": true,
+      "dismissed": [],
+      "cleaned": {
+        "ads_hidden": 0,
+        "chrome_hidden": 2,
+        "sticky_hidden": 0,
+        "legal_hidden": 0
+      },
+      "chinese_characters": 442,
+      "title": "GEOFON 计划 GFZ 波茨坦 - 地震信息服务"
+    }
+  ],
+  "translation_errors": [],
+  "card_hashes": {
+    "/app/data/fast/earthquake-05/chinese-01.png": "53e90c940ee9726199d3a338893f6a1ee26ef592467f589f3dc2a61776010b15"
+  },
+  "change": "unknown",
+  "added": [],
+  "removed": [],
+  "selected_for_notification": false
+}
