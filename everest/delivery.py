@@ -214,18 +214,19 @@ def _send_wechat(config, title, text, image_urls=None):
     m_time = re.search(r'监测时间：([^\n]+)', text)
     time_raw = m_time.group(1) if m_time else dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     time_clean = time_raw.replace('T', ' ')[:19]
-    source_name = title.replace('珠峰监控 · ', '')
+    source_name = title.replace('珠峰监控 · ', '').replace('产品名称 · ', '')
 
     # Map parameters for standard and custom category templates
     # thing16 limit is 20 chars
     prod_name = (source_name if len(source_name) <= 20 else source_name[:19] + '…')
+    card_title = f"产品名称 · {source_name}"
     data = {
-        'first': {'value': title, 'color': '#173177'},
+        'first': {'value': card_title, 'color': '#173177'},
         'keyword1': {'value': source_name, 'color': '#173177'},
         'keyword2': {'value': '监测到自然环境数据/遥感画面更新', 'color': '#e02020'},
         'keyword3': {'value': time_clean, 'color': '#888888'},
         'remark': {'value': 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］', 'color': '#666666'},
-        'title': {'value': title},
+        'title': {'value': card_title},
         'content': {'value': text[:100] + '...' if len(text) > 100 else text},
         'time': {'value': time_clean},
         # Category template keywords (e.g. thing16, time6 for 工单审批通知/运维)
