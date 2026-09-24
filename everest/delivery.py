@@ -84,7 +84,8 @@ def _deploy_to_github_pages(file_name, html_content, config):
     gh = config.get('github_pages') or {}
     owner = gh.get('owner', 'Yizebaba')
     repo = gh.get('repo', 'Everest-realtime')
-    base_url = gh.get('base_url', f"https://raw.githubusercontent.com/{owner}/{repo}/main").rstrip('/')
+    # Web pages MUST use GitHub Pages domain to render as HTML
+    page_base_url = f"https://{owner}.github.io/{repo}".rstrip('/')
     token = gh.get('token')
     if not token:
         token_file = Path('/app/github_token.txt')
@@ -110,7 +111,7 @@ def _deploy_to_github_pages(file_name, html_content, config):
         payload['sha'] = sha
     res = requests.put(url, headers=headers, json=payload, timeout=20)
     if res.status_code in (200, 201):
-        return f"{base_url}/{rel_path}"
+        return f"{page_base_url}/{rel_path}"
     print(f"Deploy to GitHub Pages error: {res.status_code} {res.text[:100]}", flush=True)
     return None
 
@@ -120,7 +121,8 @@ def _upload_github_image(path, config, file_prefix=''):
     gh = config.get('github_pages') or {}
     owner = gh.get('owner', 'Yizebaba')
     repo = gh.get('repo', 'Everest-realtime')
-    base_url = gh.get('base_url', f"https://raw.githubusercontent.com/{owner}/{repo}/main").rstrip('/')
+    # Images MUST use raw.githubusercontent.com for instant direct image stream
+    image_base_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main".rstrip('/')
     token = gh.get('token')
     if not token:
         token_file = Path('/app/github_token.txt')
@@ -149,7 +151,7 @@ def _upload_github_image(path, config, file_prefix=''):
         payload['sha'] = sha
     put_res = requests.put(url, headers=headers, json=payload, timeout=30)
     if put_res.status_code in (200, 201):
-        return f"{base_url}/{rel_path}"
+        return f"{image_base_url}/{rel_path}"
     raise ValueError(f"GitHub image upload failed: {put_res.status_code}")
 
 
