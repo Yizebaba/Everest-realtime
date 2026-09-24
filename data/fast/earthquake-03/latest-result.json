@@ -1,0 +1,64 @@
+{
+  "source": {
+    "category": "地震",
+    "category_id": "earthquake",
+    "name": "EMSC 欧洲地中海地震中心",
+    "rule_id": "earthquake-03",
+    "source_id": "earthquake-03",
+    "source_tier": "core",
+    "nature": "observation",
+    "url": "https://www.emsc-csem.org/",
+    "cadence_min": 15,
+    "enabled": true,
+    "interval_minutes": 15,
+    "lightweight": true,
+    "interval_seconds": 3
+  },
+  "run_id": "20260924T075005Z-1e6815",
+  "result": "found",
+  "retrieved_at": "2026-09-24T07:50:08.517336+00:00",
+  "source_time": null,
+  "content": [
+    "Mw 7.2 and Mw 7.5 VENEZUELA on June 24th 2026 at 22:04 and 22:05 UTC",
+    "EMSC 2025 Activity Report DOI: 10.5281/zenodo.19130493",
+    "Discover the LastQuake Messenger Bot — a free, ad-free service — and receive personalised information about felt earthquakes near you.",
+    "Just click this link or search LastQuake Alert Bot on Messenger.",
+    "Citizen response Date & Time UTC Lat. degrees Lon. degrees Depth km Mag. Region"
+  ],
+  "matches": [],
+  "cards": [],
+  "error": "",
+  "pages": [
+    {
+      "url": "https://www.emsc-csem.org/",
+      "kind": "root",
+      "content_type": "text/html",
+      "retrieved_at": "2026-09-24T07:50:08.512634+00:00",
+      "items": 5
+    }
+  ],
+  "network_records": [],
+  "map_images": [],
+  "article_records": [
+    {
+      "url": "https://www.emsc-csem.org/",
+      "title": "EMSC - European-Mediterranean Seismological Centre",
+      "published_at": null
+    }
+  ],
+  "acquisition_errors": [],
+  "pending_urls": [],
+  "alert_screenshots": [],
+  "content_type": "text/html",
+  "final_url": "https://www.emsc-csem.org/",
+  "raw_path": "/app/data/fast/earthquake-03/response.bin",
+  "title": "EMSC - European-Mediterranean Seismological Centre",
+  "relevance": "out_of_scope",
+  "event_status": "not_event",
+  "coverage": "complete_for_requested_pages",
+  "change": "out_of_scope",
+  "added": [],
+  "removed": [],
+  "duplicate_event_keys": 0,
+  "selected_for_notification": false
+}
