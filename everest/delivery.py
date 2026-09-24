@@ -115,37 +115,53 @@ def _deploy_to_github_pages(file_name, html_content, config):
     return None
 
 
-def _upload_imgbb(path, config):
-    imgbb = config.get('imgbb') or {}
-    key = imgbb.get('key')
-    if not key:
-        raise ValueError('No ImgBB key configured')
-    expiration = int(imgbb.get('expiration', 172800))
-    with Path(path).open('rb') as f:
-        response = requests.post(
-            'https://api.imgbb.com/1/upload',
-            params={'key': key, 'expiration': expiration},
-            files={'image': f},
-            timeout=35
-        )
-    response.raise_for_status()
-    data = response.json()
-    if data.get('success') and data.get('data'):
-        return data['data']['url']
-    raise ValueError('ImgBB upload rejected: ' + str(data))
+def _upload_github_image(path, config):
+    p = Path(path)
+    gh = config.get('github_pages') or {}
+    owner = gh.get('owner', 'Yizebaba')
+    repo = gh.get('repo', 'Everest-realtime')
+    base_url = gh.get('base_url', f"https://{owner}.github.io/{repo}").rstrip('/')
+    token = gh.get('token')
+    if not token:
+        token_file = Path('/app/github_token.txt')
+        if not token_file.exists():
+            token_file = Path('D:/Zhufenjianche/github_token.txt')
+        if token_file.exists():
+            token = token_file.read_text(encoding='utf-8').strip()
+    if not token:
+        raise ValueError("GitHub token missing for image upload")
+
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'Everest-Image-Publisher'
+    }
+    file_bytes = p.read_bytes()
+    content_b64 = base64.b64encode(file_bytes).decode('utf-8')
+    rel_path = f"evidence/images/{p.name}"
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{rel_path}"
+    get_res = requests.get(url, headers=headers)
+    sha = get_res.json().get('sha') if get_res.status_code == 200 else None
+    payload = {'message': f'upload: evidence image {p.name}', 'content': content_b64}
+    if sha:
+        payload['sha'] = sha
+    put_res = requests.put(url, headers=headers, json=payload, timeout=30)
+    if put_res.status_code in (200, 201):
+        return f"{base_url}/{rel_path}"
+    raise ValueError(f"GitHub image upload failed: {put_res.status_code}")
 
 
 def upload(path, settings, config=None):
-    """Upload via ImgBB as primary public image CDN."""
+    """Upload via official GitHub Pages repository exclusively."""
     if not settings.get('delivery_enabled', False):
         raise ValueError('External media delivery is disabled; evidence remains local')
-    if config and (config.get('imgbb') or {}).get('key'):
+    if config and config.get('github_pages'):
         try:
-            result = _upload_imgbb(path, config)
+            result = _upload_github_image(path, config)
             if result and result.startswith('https://'):
                 return result
         except Exception as exc:
-            print(f'ImgBB upload warning: {exc}', flush=True)
+            print(f'GitHub image upload warning: {exc}', flush=True)
     hosts = [(_upload_uguu, settings.get('image_upload_url')),
              (_upload_tmpfiles, settings.get('image_upload_fallback'))]
     errors = []
