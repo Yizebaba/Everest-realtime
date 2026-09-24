@@ -4,7 +4,25 @@ from urllib.parse import urljoin, urlsplit, urlunsplit, urlencode
 from bs4 import BeautifulSoup
 
 
-def discover(body, base, settings):
+NEWS_HAZARD_TERMS = (
+    'earthquake', 'seismic', 'aftershock', 'flood', 'flash flood', 'glof',
+    'landslide', 'mudslide', 'debris flow', 'avalanche', 'icefall',
+    'glacial lake', 'glacier burst', 'rescue', 'evacuat', 'closure',
+    'warning', 'alert', 'heavy rain', 'snowfall', 'blizzard',
+    '地震', '洪水', '山洪', '滑坡', '泥石流', '雪崩', '冰崩', '冰湖', '救援',
+    '疏散', '封路', '预警', '警报', '暴雨', '降雪',
+)
+NMC_ALERT_TITLES = ('农业气象灾害风险预警', '山洪灾害气象预警', '地质灾害气象风险预警')
+def news_candidate(text):
+    lowered = (text or '').lower()
+    return any(term.lower() in lowered for term in NEWS_HAZARD_TERMS)
+
+
+def news_direct_event(text):
+    return news_candidate(text)
+
+
+def discover(body, base, settings, news_only=False, nmc_alerts_only=False):
     soup = BeautifulSoup(body, 'html.parser')
     links = []
     def add(href, kind):
@@ -15,6 +33,16 @@ def discover(body, base, settings):
         url = urlunsplit((parts.scheme, parts.netloc, parts.path, parts.query, ''))
         if url != base and not any(x['url'] == url for x in links):
             links.append({'url': url, 'kind': kind})
+    if nmc_alerts_only:
+        for tag in soup.select('a[title][href]'):
+            if tag.get('title', '').strip() in NMC_ALERT_TITLES:
+                add(tag['href'], 'nmc_alert')
+        return links
+    if news_only:
+        for tag in soup.select('article a[href], h1 a[href], h2 a[href], h3 a[href], h4 a[href], a[rel="bookmark"], a[href*="/news/"], a[href*="/story/"], a[href*="/article/"]'):
+            if news_direct_event(tag.get_text(' ', strip=True)):
+                add(tag.get('href'), 'matched_article')
+        return links
     if settings.get('discover_feeds'):
         for tag in soup.select('link[rel="alternate"][href]'):
             if any(t in tag.get('type', '') for t in ('rss', 'atom')):
