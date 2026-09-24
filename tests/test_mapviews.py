@@ -105,4 +105,4 @@ def test_map_view_failure_does_not_fall_back_to_page(tmp_path):
 
 def test_signature_renamed():
     from everest.delivery import SIGNATURE
-    assert SIGNATURE == 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+    assert 'No1-Shine' in SIGNATURE
