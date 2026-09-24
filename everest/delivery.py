@@ -9,7 +9,7 @@ from pathlib import Path
 import requests
 
 from .core import fingerprint, read_json
-from .page_renderer import build_evidence_page
+from .page_renderer import render_notification_page, build_evidence_page
 
 SIGNATURE = 'WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
 
