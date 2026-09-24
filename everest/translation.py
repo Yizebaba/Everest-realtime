@@ -203,13 +203,43 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             _cleanup_translation_artifacts(page)
             clean_report = clean_page(page, settings)
             page.wait_for_timeout(800)
+            if 'nature.com' in url:
+                try:
+                    page.evaluate("""() => {
+                        const m = document.querySelector('.c-site-messages, [class*="nature-briefing"], [id*="nature-briefing"]');
+                        if (m) m.remove();
+                    }""")
+                except Exception:
+                    pass
             body = page.locator('body').inner_text()
             if any(marker in body for marker in BLOCK_PAGES):
                 raise ValueError('Translated source is a blocked page')
             chinese = len(re.findall(r'[\u3400-\u9fff]', body))
             if chinese < 20:
                 raise ValueError('No translated Chinese source content')
-            page.screenshot(path=str(path), full_page=True, timeout=20000)
+            if 'emsc-csem.org' in url:
+                try:
+                    right_box = page.locator('.hright, #hmap').first.bounding_box()
+                    if right_box:
+                        top = max(0, right_box['y'] - 10)
+                        height = min(1200, right_box['height'] + 700)
+                        page.screenshot(path=str(path), clip={'x': max(0, right_box['x'] - 10), 'y': top, 'width': min(1280, right_box['width'] + 20), 'height': height}, timeout=20000)
+                    else:
+                        page.screenshot(path=str(path), full_page=True, timeout=20000)
+                except Exception:
+                    page.screenshot(path=str(path), full_page=True, timeout=20000)
+            elif 'open-meteo.com/en/docs' in url:
+                api = page.get_by_text('API Response', exact=True).first
+                data_sources = page.get_by_text('Data Sources', exact=True).first
+                api_box = api.bounding_box()
+                sources_box = data_sources.bounding_box()
+                if not api_box or not sources_box:
+                    raise ValueError('Open-Meteo API sections unavailable')
+                top = max(0, api_box['y'] - 24)
+                bottom = max(sources_box['y'] + sources_box['height'] + 900, top + 600)
+                page.screenshot(path=str(path), clip={'x': 0, 'y': top, 'width': 1280, 'height': min(bottom - top, 12000)}, timeout=20000)
+            else:
+                page.screenshot(path=str(path), full_page=True, timeout=20000)
             return {'provider': 'Google Translate website widget (in-place)', 'source_url': url,
                     'target_language': 'zh-CN', 'captured_at': now(), 'machine_translation': True,
                     'dismissed': dismissed, 'cleaned': clean_report,
