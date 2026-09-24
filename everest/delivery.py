@@ -85,12 +85,16 @@ def _deploy_to_github_pages(file_name, html_content, config):
     owner = gh.get('owner', 'Yizebaba')
     repo = gh.get('repo', 'Everest-realtime')
     base_url = gh.get('base_url', f"https://{owner}.github.io/{repo}").rstrip('/')
-    token_file = Path('/app/github_token.txt')
-    if not token_file.exists():
-        token_file = Path('D:/Zhufenjianche/github_token.txt')
-    if not token_file.exists():
+    token = gh.get('token')
+    if not token:
+        token_file = Path('/app/github_token.txt')
+        if not token_file.exists():
+            token_file = Path('D:/Zhufenjianche/github_token.txt')
+        if token_file.exists():
+            token = token_file.read_text(encoding='utf-8').strip()
+    if not token:
+        print('GitHub Pages token not configured!', flush=True)
         return None
-    token = token_file.read_text(encoding='utf-8').strip()
     headers = {
         'Authorization': f'Bearer {token}',
         'Accept': 'application/vnd.github+json',
@@ -107,6 +111,7 @@ def _deploy_to_github_pages(file_name, html_content, config):
     res = requests.put(url, headers=headers, json=payload, timeout=20)
     if res.status_code in (200, 201):
         return f"{base_url}/{rel_path}"
+    print(f"Deploy to GitHub Pages error: {res.status_code} {res.text[:100]}", flush=True)
     return None
 
 
