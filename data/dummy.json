@@ -1,0 +1,21 @@
+{
+  "run_id": "run-test",
+  "source": {
+    "rule_id": "one",
+    "name": "珠峰数据源",
+    "url": "https://example.test"
+  },
+  "result": "found",
+  "cards": [
+    "data/dummy.png"
+  ],
+  "card_hashes": {
+    "data/dummy.png": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+  },
+  "image_kind": "original_screenshot",
+  "retrieved_at": "2026-09-15T00:00:00Z",
+  "change": "unchanged",
+  "added": [],
+  "removed": [],
+  "selected_for_notification": true
+}
