@@ -2,14 +2,16 @@ import html
 
 def render_notification_page(title, source_url, time_str, image_cards, signature='vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
     """
+    World-Class Trilingual Academic Style D (Pure White, Skyline Editorial, No-Border Header Box).
     image_cards: list of dicts, each like:
     {
         'layer_cn': '真彩色遥感底图',
         'layer_en': 'MODIS Terra True Color',
+        'layer_ne': 'मोडिस टेरा वास्तविक रङ उपग्रह छवि',
         'layer_index': 1,
-        'layer_total': 3,
+        'layer_total': 2,
         'image_url': 'https://...',
-        'layer_target_url': 'https://...' (target url to open when clicking the layer title)
+        'layer_target_url': 'https://...'
     }
     """
     esc = html.escape
@@ -27,6 +29,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             img_url = card
             cn = ""
             en = ""
+            ne = ""
             idx = i
             tot = total
             jump_url = source_url
@@ -34,39 +37,41 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             img_url = card.get('image_url', '')
             cn = card.get('layer_cn', '')
             en = card.get('layer_en', '')
+            ne = card.get('layer_ne', '')
             idx = card.get('layer_index', i)
             tot = card.get('layer_total', total)
             jump_url = card.get('layer_target_url') or source_url
         
-        badge_html = ""
-        if cn or en:
-            label_text = f"{cn} · {en}" if (cn and en) else (cn or en)
-            badge_html = f'''
-            <div class="layer-header">
-                <a class="layer-name-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer" title="点击打开图层对应官方网页">{esc(label_text)}</a>
-                <div class="layer-index">图层 {idx} / {tot}</div>
-            </div>
-            '''
-        elif is_multi:
-            badge_html = f'''
-            <div class="layer-header">
-                <a class="layer-name-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer" title="点击打开图层对应官方网页">图层 {idx}</a>
-                <div class="layer-index">图层 {idx} / {tot}</div>
-            </div>
-            '''
+        # Build layer trilingual heading
+        layer_parts = []
+        if cn:
+            layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">{esc(cn)}</a>')
+        if en:
+            layer_parts.append(f'<span class="lang-en-text">{esc(en)}</span>')
+        if ne:
+            layer_parts.append(f'<span class="lang-ne-text">{esc(ne)}</span>')
+            
+        if not layer_parts and is_multi:
+            layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">图层 {idx}</a>')
 
-        sig_block = f'<div class="footer">{sig_esc}</div>' if (i == total) else ''
-        cards_html.append(f'''
-        <div class="card-box">
-            {badge_html}
-            <div class="img-wrapper">
-                <img loading="lazy" src="{esc(img_url)}" alt="{title_esc} 截图" />
+        heading_content = '<span class="divider-slash">/</span>'.join(layer_parts)
+        badge_html = f'''
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                {heading_content}
             </div>
-            {sig_block}
+            <div class="flow-index-tag">LAYER {idx:02d} / {tot:02d}</div>
         </div>
-        ''')
+        ''' if layer_parts else ''
 
-    multi_badge = f'<div class="multi-tag">多图层模式 · 共 {total} 层</div>' if is_multi else ''
+        cards_html.append(f'''
+        <article class="flow-card">
+            {badge_html}
+            <div class="flow-image-box">
+                <img loading="lazy" src="{esc(img_url)}" alt="{title_esc} 监测截图 {idx}" />
+            </div>
+        </article>
+        ''')
 
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
@@ -74,164 +79,354 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
     <title>{title_esc}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {{
+            --bg-page: #ffffff;
+            --bg-muted: #f8fafc;
+            --border-light: #e5e7eb;
+            --border-line: #cbd5e1;
+            --accent-blue: #0284c7;
+            --accent-navy: #0f172a;
+            --text-title: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+        }}
+
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{
-            background: #090d16;
-            color: #f1f5f9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-            padding: 16px 14px;
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: 'Inter', 'Noto Sans SC', 'Noto Sans Devanagari', -apple-system, sans-serif;
+            padding: 24px 20px 60px;
             line-height: 1.6;
         }}
+
         .container {{
-            max-width: 880px;
+            max-width: 1120px;
             margin: 0 auto;
         }}
-        .top-panel {{
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 18px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+
+        /* 顶部机构标头 */
+        .world-topbar {{
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-line);
+            margin-bottom: 28px;
         }}
-        .title-bar {{
+
+        .world-names {{
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }}
+
+        .name-en {{
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-title);
+            line-height: 1.2;
+        }}
+
+        .name-dual {{
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }}
+
+        .name-dual span {{
+            color: var(--accent-blue);
+        }}
+
+        /* 主标题区域：底色放宽，内部文字 padding-left: 28px 向右黄金留白 */
+        .event-card {{
+            background: var(--bg-muted);
+            border: none;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: none;
+        }}
+
+        .event-title-main {{
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--text-title);
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }}
+
+        .event-title-main a {{
+            color: var(--text-title);
+            text-decoration: none;
+            transition: color 0.15s;
+        }}
+        .event-title-main a:hover {{
+            color: var(--accent-blue);
+        }}
+
+        .intl-subtitle-grid {{
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }}
+
+        .sub-item {{
+            font-size: 14px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 12px;
-        }}
-        h1 {{
-            font-size: 20px;
-            color: #38bdf8;
-            font-weight: 700;
-        }}
-        .title-link {{
-            color: #38bdf8;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            cursor: pointer;
-        }}
-        .title-link:hover {{
-            color: #7dd3fc;
-        }}
-        .multi-tag {{
-            background: rgba(56, 189, 248, 0.15);
-            color: #7dd3fc;
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            font-size: 13px;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-        }}
-        .meta-line {{
-            margin-bottom: 10px;
-            font-size: 15px;
-            display: flex;
-            align-items: flex-start;
             gap: 8px;
         }}
-        .meta-line:last-child {{ margin-bottom: 0; }}
-        .label {{
-            color: #94a3b8;
-            font-weight: 600;
-            flex-shrink: 0;
+
+        .sub-tag {{
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
         }}
-        .source-url {{
-            color: #38bdf8;
-            word-break: break-all;
-            text-decoration: underline;
-            text-underline-offset: 4px;
+
+        .sub-text-en {{
+            color: var(--text-muted);
             font-weight: 500;
         }}
-        .source-url:hover {{
-            color: #7dd3fc;
+
+        .sub-text-ne {{
+            color: var(--text-muted);
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-weight: 600;
         }}
-        .card-box {{
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 22px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+
+        /* 来源/时间/范围：彻底放宽 */
+        .meta-metrics {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 0 0 20px 0;
+            margin-bottom: 36px;
         }}
-        .layer-header {{
+
+        .metric {{
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1e293b;
-            border-left: 4px solid #38bdf8;
-            border-radius: 4px;
-            padding: 8px 14px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column;
+            gap: 4px;
         }}
-        .layer-name-link {{
-            color: #38bdf8;
-            font-size: 15px;
+
+        .metric-label {{
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-light);
+        }}
+
+        .metric-val {{
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-title);
+            word-break: break-all;
+        }}
+
+        .metric-val a {{
+            color: var(--accent-blue);
             text-decoration: underline;
             text-underline-offset: 3px;
-            cursor: pointer;
         }}
-        .layer-name-link:hover {{
-            color: #7dd3fc;
+
+        /* 图层流 */
+        .layer-flow {{
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
         }}
-        .layer-index {{
-            background: #334155;
-            color: #93c5fd;
-            font-size: 12px;
+
+        .flow-card {{
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }}
+
+        .flow-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 12px;
+            padding: 12px 0 10px 0;
+            border-bottom: 1.5px solid var(--text-title);
+        }}
+
+        .layer-heading-row {{
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            flex: 1;
+        }}
+
+        .layer-title-link {{
+            font-size: 19px;
+            font-weight: 900;
+            color: var(--text-title);
+            text-decoration: none;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }}
+        .layer-title-link:hover {{ color: var(--accent-blue); }}
+
+        .divider-slash {{
+            color: var(--border-line);
+            font-weight: 300;
+            font-size: 15px;
+        }}
+
+        .lang-en-text {{
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }}
+
+        .lang-ne-text {{
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            color: var(--text-muted);
+            font-size: 14px;
             font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
         }}
-        .img-wrapper img {{
+
+        .flow-index-tag {{
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-title);
+            background: #f1f5f9;
+            border: 1px solid var(--border-line);
+            padding: 4px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }}
+
+        .flow-image-box {{
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }}
+
+        .flow-image-box img {{
             width: 100%;
             height: auto;
             display: block;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #020617;
-            /* Pure image view: no link wrapping on screenshot */
-            cursor: default;
         }}
-        .footer {{
+
+        /* 页面底部署名 */
+        .footer-banner {{
+            margin-top: 50px;
+            padding: 24px 16px 12px;
+            border-top: 1px solid var(--border-line);
             text-align: center;
+        }}
+
+        .ft-lead {{
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-title);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }}
+
+        .ft-sub {{
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }}
+
+        .ft-nepali {{
+            font-family: 'Noto Sans Devanagari', sans-serif;
             font-size: 13px;
-            color: #94a3b8;
-            padding: 24px 0 14px;
-            border-top: 1px solid #1e293b;
-            margin-top: 24px;
-            font-weight: 500;
+            color: var(--text-light);
+            font-weight: 600;
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="top-panel">
-            <div class="title-bar">
-                <h1><a class="title-link" href="{url_esc}" target="_blank" rel="noopener noreferrer">{title_esc}</a></h1>
-                {multi_badge}
+        <!-- 顶部机构名 -->
+        <header class="world-topbar">
+            <div class="world-names">
+                <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
+                <div class="name-dual">
+                    <span>珠穆朗玛峰</span> · <span>सगरमाथा</span> · <span>CHOMOLUNGMA</span>
+                </div>
             </div>
-            <div class="meta-line">
-                <span class="label">来源网址：</span>
-                <a class="source-url" href="{url_esc}" target="_blank" rel="noopener noreferrer">{url_esc}</a>
+        </header>
+
+        <!-- 主标题区域：底色放宽，文字向右内收 28px -->
+        <section class="event-card">
+            <h1 class="event-title-main">
+                <a href="{url_esc}" target="_blank">{title_esc}</a>
+            </h1>
+            <div class="intl-subtitle-grid">
+                <div class="sub-item">
+                    <span class="sub-tag">English</span>
+                    <span class="sub-text-en">NASA Earth Observatory Spaceborne Telemetry Array</span>
+                </div>
+                <div class="sub-item">
+                    <span class="sub-tag">नेपाली</span>
+                    <span class="sub-text-ne">नासा पृथ्वी वेधशाला अन्तरिक्ष-आधारित टेलिमेट्री अनुगमन</span>
+                </div>
             </div>
-            <div class="meta-line">
-                <span class="label">监测时间：</span>
-                <span style="color:#f1f5f9;">{time_esc}</span>
+        </section>
+
+        <!-- 来源/时间/范围：横向放宽 -->
+        <div class="meta-metrics">
+            <div class="metric">
+                <span class="metric-label">Source / स्रोत लिङ्क</span>
+                <span class="metric-val">
+                    <a href="{url_esc}" target="_blank">{url_esc}</a>
+                </span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Observed Time / अवलोकन समय</span>
+                <span class="metric-val">{time_esc}</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Scope / निगरानी क्षेत्र</span>
+                <span class="metric-val">珠峰-昆布冰冻圈 / Everest-Khumbu Cryosphere</span>
             </div>
         </div>
 
-        <div class="cards-stream">
+        <!-- 多图层流 -->
+        <main class="layer-flow">
             {''.join(cards_html)}
-        </div>
+        </main>
+
+        <!-- 页面最底部细线署名 -->
+        <footer class="footer-banner">
+            <div class="ft-lead">{sig_esc}</div>
+            <div class="ft-sub">Qomolangma Multi-Hazard Monitoring & Observation Platform</div>
+            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
+        </footer>
     </div>
 </body>
 </html>'''
@@ -243,6 +438,7 @@ def build_evidence_page(title, source_url, time_str, image_urls, layer_names=Non
         cards.append({
             'layer_cn': name,
             'layer_en': '',
+            'layer_ne': '',
             'layer_index': i + 1,
             'layer_total': len(image_urls),
             'image_url': u,
