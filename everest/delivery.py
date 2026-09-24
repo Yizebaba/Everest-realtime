@@ -11,7 +11,7 @@ import requests
 from .core import fingerprint, read_json
 from .page_renderer import build_evidence_page
 
-SIGNATURE = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+SIGNATURE = 'WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
 
 LAYER_NAMES = {
     'wind': '风力图层',
