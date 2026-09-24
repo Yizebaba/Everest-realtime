@@ -1,9 +1,10 @@
 """Original source screenshots only: no redrawn text or composited data cards."""
 import html
+import os
 import shutil
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from .core import now, read_json
 from .clean import clean_page
@@ -26,13 +27,42 @@ def screenshot(url, path, settings):
             if response and response.status >= 400:
                 raise ValueError('Browser HTTP '+str(response.status))
             page.wait_for_timeout(settings['browser_wait_ms'])
+            if 'earthquake.usgs.gov/earthquakes/map' in url:
+                try:
+                    for item in page.locator('mat-list-option, .map-list-item, [role=option], .mat-list-item, .mat-mdc-list-item').all():
+                        if item.inner_text().strip():
+                            item.click(timeout=3000)
+                            page.wait_for_timeout(2500)
+                            break
+                except Exception:
+                    pass
+            if 'nature.com' in url:
+                try:
+                    page.evaluate("""() => {
+                        const m = document.querySelector('.c-site-messages, [class*="nature-briefing"], [id*="nature-briefing"]');
+                        if (m) m.remove();
+                    }""")
+                except Exception:
+                    pass
             text = page.title()+'\n'+page.locator('body').inner_text()
             if any(marker in text for marker in BLOCK_PAGES):
                 raise ValueError('Source page blocked; original screenshot unavailable')
             dismiss_gates(page)
             cleaned = clean_page(page, settings)
             page.wait_for_timeout(600)
-            page.screenshot(path=str(path), full_page=True, timeout=15000)
+            if 'emsc-csem.org' in url:
+                try:
+                    right_box = page.locator('.hright, #hmap').first.bounding_box()
+                    if right_box:
+                        top = max(0, right_box['y'] - 10)
+                        height = min(1200, right_box['height'] + 700)
+                        page.screenshot(path=str(path), clip={'x': max(0, right_box['x'] - 10), 'y': top, 'width': min(1280, right_box['width'] + 20), 'height': height}, timeout=15000)
+                    else:
+                        page.screenshot(path=str(path), full_page=True, timeout=15000)
+                except Exception:
+                    page.screenshot(path=str(path), full_page=True, timeout=15000)
+            else:
+                page.screenshot(path=str(path), full_page=True, timeout=15000)
             return {'captured_at':now(),'final_url':page.url,'cleaned':cleaned}
         finally:
             browser.close()
@@ -56,6 +86,93 @@ def _trim_bottom_blank(img, sample_threshold=235):
     return img
 
 
+LAYER_NAMES = {
+    'wind': '风力图层',
+    'rain': '降水/对流图层',
+    'temp': '气温图层',
+    'clouds': '云量图层',
+    'default': '全要素底图',
+    'true_color': '真彩色遥感底图',
+    'true_color_modis': 'MODIS Terra 真彩色遥感底图',
+    'snow_cover_ndsi': 'MODIS 积雪覆盖与冰川反射 (NDSI)',
+    'surface_temp_day': '白天地表与冰面温度 (LST Day)',
+    'surface_temp_night': '夜间地表与冰面温度 (LST Night)',
+    'viirs_hires_truecolor': 'Suomi NPP / VIIRS 高清真彩',
+    'fires_thermal_375m': 'NOAA-20 VIIRS 375米热异常/火点',
+    'active_fires_24h': '珠峰24小时热异常检测',
+    'geocolor': '全盘真彩云图',
+    'webcams': '实时网络摄像头',
+    'flood_forecast': '洪水预报/预警地图',
+    'global_overview': '全球河流洪涝概览',
+    'disaster_spot': '洪水灾害点放大直达',
+    'hazards': '国家综合灾害地图'
+}
+
+
+def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None):
+    """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom."""
+    sig = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+    font_file = font_path or os.environ.get('EVEREST_FONT', 'C:/Windows/Fonts/msyh.ttc')
+    # Enlarged high-visibility font sizes for phone screens
+    font_size = max(26, int(image.width * 0.026))
+    title_size = max(30, int(image.width * 0.030))
+    footer_size = max(24, int(image.width * 0.024))
+    try:
+        font = ImageFont.truetype(font_file, font_size)
+        title_font = ImageFont.truetype(font_file, title_size)
+        footer_font = ImageFont.truetype(font_file, footer_size)
+    except Exception:
+        font = ImageFont.load_default()
+        title_font = font
+        footer_font = font
+
+    # Format header text lines
+    lines = []
+    if source_url:
+        lines.append(('来源网址：' + source_url, '#38bdf8', font))
+    time_clean = (retrieved_at or now()).replace('T', ' ')[:19]
+    line2 = f"监测时间：{time_clean}"
+    if layer_title:
+        line2 += f"    {layer_title}"
+    lines.append((line2, '#f1f5f9', title_font if layer_title else font))
+
+    line_h = int(font_size * 1.7)
+    header_pad = int(font_size * 1.0)
+    header_h = header_pad * 2 + len(lines) * line_h
+
+    banner_h = int(footer_size * 3.2)
+    total_h = header_h + image.height + banner_h
+
+    out_img = Image.new('RGB', (image.width, total_h), '#0f172a')
+    draw = ImageDraw.Draw(out_img)
+
+    # Render header
+    curr_y = header_pad
+    for text_content, color, f in lines:
+        draw.text((24, curr_y), text_content, fill=color, font=f)
+        curr_y += line_h
+    draw.line([(0, header_h), (image.width, header_h)], fill='#38bdf8', width=3)
+
+    # Paste screenshot image
+    out_img.paste(image, (0, header_h))
+
+    # Render bottom signature
+    footer_top = header_h + image.height
+    draw.line([(0, footer_top), (image.width, footer_top)], fill='#334155', width=2)
+    bbox = draw.textbbox((0, 0), sig, font=footer_font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    x = max(10, (image.width - text_w) // 2)
+    y = footer_top + (banner_h - text_h) // 2
+    draw.text((x, y), sig, fill='#cbd5e1', font=footer_font)
+
+    return out_img
+
+
+def _append_signature_bar(image, font_path=None):
+    return _decorate_evidence_card(image, font_path=font_path)
+
+
 def make_cards(result, folder, settings):
     """Keep the existing cards transport field, but fill it only with original page pixels."""
     result['cards'] = []
@@ -66,14 +183,25 @@ def make_cards(result, folder, settings):
         captured = [view for view in map_views if view.get('image') and not view.get('error')]
         if captured:
             result['map_view_items'] = []
-            for view in captured:
+            total_layers = len(captured)
+            for idx, view in enumerate(captured, 1):
                 target = folder / f"mapview-{view['layer']}.png"
-                shutil.copyfile(view['image'], target)
+                layer_cn = view.get('layer_name') or LAYER_NAMES.get(view['layer'], view['layer'])
+                layer_banner = f"珠峰视角图层（共 {total_layers} 层） | 第 {idx} 层：{layer_cn}"
+                with Image.open(view['image']) as img:
+                    signed_img = _decorate_evidence_card(
+                        img.convert('RGB'),
+                        source_url=view.get('view_url') or result['source']['url'],
+                        retrieved_at=result.get('retrieved_at'),
+                        layer_title=layer_banner,
+                        font_path=settings.get('font')
+                    )
+                    signed_img.save(target)
                 result['cards'].append(str(target))
                 result['map_view_items'].append({
                     'path': str(target),
                     'layer': view['layer'],
-                    'name': view.get('layer_name', view['layer']),
+                    'name': layer_cn,
                     'url': view.get('view_url', '')
                 })
             result['image_kind'] = 'everest_map_view'
@@ -84,19 +212,22 @@ def make_cards(result, folder, settings):
     override = settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
     sources = []
     if not override:
-        subpages = sorted(folder.glob('page-*/page.png'))
-        if subpages and result['source'].get('nature') == 'news':
-            # For news sources: prioritize the opened specific article pages over home
-            sources.extend(subpages)
-            if result.get('screenshot') and (folder/'page.png').is_file():
-                sources.append(folder/'page.png')
+        if result['source']['rule_id'] == 'weather-03':
+            sources = [Path(path) for path in result.get('alert_screenshots', [])]
+        elif result['source'].get('category_id') == 'news':
+            if result.get('alert_screenshots'):
+                sources = [Path(path) for path in result.get('alert_screenshots', [])]
+            elif result.get('screenshot') and (folder/'page.png').is_file():
+                sources = [folder/'page.png']
         else:
+            subpages = sorted(folder.glob('page-*/page.png'))
             if result.get('screenshot') and (folder/'page.png').is_file():
                 sources.append(folder/'page.png')
             sources.extend(subpages)
         sources = [path for path in sources if not (path.parent/'rendered.html').exists() or not any(marker in
             (path.parent/'rendered.html').read_text(encoding='utf-8', errors='replace')
             for marker in BLOCK_PAGES)]
+    sources = sources[:1]
     if not sources and settings.get('screenshots', True):
         target = folder/'source-original.png'
         try:
@@ -113,7 +244,7 @@ def make_cards(result, folder, settings):
     result['translation_errors'] = []
     if settings.get('translate_screenshots', False):
         from .translation import chinese_screenshot
-        max_pages = int(settings.get('max_translated_pages', 3))
+        max_pages = 1
         translated=[]
         for i, source in enumerate(sources[:max_pages]):
             info_path=source.parent/'screenshot-info.json'
@@ -147,18 +278,23 @@ def make_cards(result, folder, settings):
             result['screenshot_error']='Chinese translation failed for all pages: '+(
                 result['translation_errors'][0] if result['translation_errors'] else 'unknown')
             return result
-    for source in sources:
+    for source in sources[:1]:
         with Image.open(source) as raw_image:
             image = _trim_bottom_blank(raw_image.convert('RGB'))
-            # Split tall pages losslessly for image channels; no scaling, markup or text overlays.
-            for top in range(0,image.height,12000):
-                prefix='chinese' if result['image_kind']=='translated_source_screenshot' else 'original'
-                target=folder/f'{prefix}-{len(result["cards"])+1:02d}.png'
-                if image.height<=12000:
-                    image.save(target)
-                else:
-                    image.crop((0,top,image.width,min(top+12000,image.height))).save(target)
-                result['cards'].append(str(target))
+            # One notification carries one key image; cap at reasonable single-screen height (no huge multi-page strip)
+            if image.height > 1600:
+                image = image.crop((0, 0, image.width, 1600))
+            prefix = 'chinese' if result['image_kind'] == 'translated_source_screenshot' else 'original'
+            target = folder / f'{prefix}-01.png'
+            source_url = result.get('original_capture', {}).get('final_url') or result['source']['url']
+            signed_image = _decorate_evidence_card(
+                image,
+                source_url=source_url,
+                retrieved_at=result.get('retrieved_at'),
+                font_path=settings.get('font')
+            )
+            signed_image.save(target)
+            result['cards'].append(str(target))
     return result
 
 
