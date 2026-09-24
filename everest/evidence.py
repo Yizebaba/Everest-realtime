@@ -111,7 +111,7 @@ LAYER_NAMES = {
 
 def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None, include_signature=True):
     """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom if required."""
-    sig = 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+    sig = 'WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
     font_file = font_path or os.environ.get('EVEREST_FONT', 'C:/Windows/Fonts/msyh.ttc')
     # Enlarged high-visibility font sizes for phone screens
     font_size = max(26, int(image.width * 0.026))
