@@ -180,11 +180,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 500;
         }}
 
-        /* 来源/时间：横向放宽，取消 Scope（范围） */
+        /* 来源/时间：单行横排流动，来源在上，时间在下，不换行截断 */
         .meta-metrics {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             background: transparent;
             border: none;
             border-bottom: 1px solid var(--border-light);
@@ -195,21 +195,22 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
 
         .metric {{
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 15px;
         }}
 
         .metric-label {{
-            font-size: 11px;
+            font-size: 15px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--text-light);
+            color: var(--text-title);
+            flex-shrink: 0;
+            letter-spacing: 0;
         }}
 
         .metric-val {{
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-title);
             word-break: break-all;
         }}
