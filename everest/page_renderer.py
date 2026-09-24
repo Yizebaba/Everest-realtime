@@ -355,16 +355,16 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             </div>
         </section>
 
-        <!-- 来源/时间：横向放宽，取消 Scope（范围） -->
+        <!-- 来源/时间：横向放宽，带标准冒号与空格 -->
         <div class="meta-metrics">
             <div class="metric">
-                <span class="metric-label">Source</span>
+                <span class="metric-label">来源：</span>
                 <span class="metric-val">
                     <a href="{url_esc}" target="_blank">{url_esc}</a>
                 </span>
             </div>
             <div class="metric">
-                <span class="metric-label">Observed Time</span>
+                <span class="metric-label">观测时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
         </div>
