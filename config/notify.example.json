@@ -1,3 +1,9 @@
 {
-  "serverchan": {"sendkey": ""}
+  "serverchan": {"sendkey": ""},
+  "wechat": {
+    "app_id": "",
+    "app_secret": "",
+    "template_id": "",
+    "touser": []
+  }
 }
