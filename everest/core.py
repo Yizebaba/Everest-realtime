@@ -5,7 +5,6 @@ import json
 import os
 import re
 import sqlite3
-import time
 from pathlib import Path
 
 
@@ -48,28 +47,20 @@ def catalog(path):
 
 
 @contextlib.contextmanager
-def run_lock(directory, max_wait_seconds=15):
-    """OS-held lock; waits gracefully if temporarily held by another task."""
+def run_lock(directory):
+    """OS-held lock; a killed process releases it without deleting another owner's lock."""
     directory.mkdir(parents=True, exist_ok=True)
     with (directory / 'monitor.lock').open('a+b') as f:
         f.seek(0, 2)
         if f.tell() == 0:
             f.write(b'0'); f.flush()
         f.seek(0)
-        start = time.monotonic()
-        while True:
-            try:
-                if os.name == 'nt':
-                    import msvcrt
-                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
-                else:
-                    import fcntl
-                    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except (BlockingIOError, OSError):
-                if time.monotonic() - start >= max_wait_seconds:
-                    raise
-                time.sleep(1)
+        if os.name == 'nt':
+            import msvcrt
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
         try:
             yield
         finally:
@@ -96,6 +87,13 @@ class Store:
                 result_path TEXT NOT NULL, destination TEXT NOT NULL,
                 state TEXT NOT NULL DEFAULT 'pending', error TEXT,
                 receipt TEXT, sent_at TEXT);
+            CREATE TABLE IF NOT EXISTS event_keys (
+                category_id TEXT NOT NULL, event_key TEXT NOT NULL,
+                first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL,
+                PRIMARY KEY (category_id, event_key));
+            CREATE TABLE IF NOT EXISTS paired_weather (
+                rule_id TEXT PRIMARY KEY, active INTEGER NOT NULL,
+                temperature_c REAL, checked_at TEXT NOT NULL);
         ''')
 
     def close(self):
@@ -112,36 +110,62 @@ class Store:
     def record(self, result, path, policy, destination):
         key = result['source']['rule_id']
         old = self.db.execute('SELECT * FROM baseline WHERE rule_id=?', (key,)).fetchone()
-        valid = result['result'] != 'unknown'
+        valid = (result['result'] != 'unknown' and result.get('relevance') != 'out_of_scope'
+                 and result.get('event_status') != 'product_update')
         content = result.get('matches', [])
         digest = fingerprint(content)
         changed = valid and old is not None and old['fingerprint'] != digest
         prior = json.loads(old['content']) if old else []
-        result['change'] = 'unknown' if not valid else ('baseline' if old is None else ('changed' if changed else 'unchanged'))
+        result['change'] = ('unknown' if result['result'] == 'unknown' else
+                            'out_of_scope' if not valid else
+                            'baseline' if old is None else ('changed' if changed else 'unchanged'))
         result['added'] = [x for x in content if x not in prior] if changed else []
         result['removed'] = [x for x in prior if x not in content] if changed else []
-        # Bypass global de-duplication for CEP experiment:
-        # Determination of notification is delegated to CEP engines
-        cep_tag = result.get('cep_engine', '')
-        selected = policy == 'all' or (policy == 'changed' and changed) or bool(cep_tag)
+        category = result['source'].get('category_id', '')
+        event_keys = [fingerprint({'category': category, 'content': item}) for item in result['added']]
+        seen = set()
+        if event_keys:
+            placeholders = ','.join('?' for _ in event_keys)
+            seen = {row['event_key'] for row in self.db.execute(
+                f'SELECT event_key FROM event_keys WHERE category_id=? AND event_key IN ({placeholders})',
+                (category, *event_keys))}
+        result['duplicate_event_keys'] = len(seen)
+        new_event = bool(set(event_keys) - seen)
+        selected = valid and bool(result.get('cards')) and (policy == 'all' or (policy == 'changed' and changed and new_event))
         result['selected_for_notification'] = selected
         write_json(path, result)
         with self.db:
             self.db.execute('INSERT OR REPLACE INTO checks VALUES (?,?)', (key, result['retrieved_at']))
             if valid:
                 self.db.execute('INSERT OR REPLACE INTO baseline VALUES (?,?,?,?)', (key, digest, json.dumps(content, ensure_ascii=False), result['retrieved_at']))
+                for event_key in event_keys:
+                    self.db.execute('INSERT INTO event_keys VALUES (?,?,?,?) ON CONFLICT(category_id,event_key) DO UPDATE SET last_seen_at=excluded.last_seen_at',
+                        (category, event_key, result['retrieved_at'], result['retrieved_at']))
             if selected:
-                notice_id = f"{result['run_id']}:{key}:{cep_tag}" if cep_tag else f"{result['run_id']}:{key}"
                 self.db.execute('INSERT OR IGNORE INTO notices (id,run_id,rule_id,result_path,destination) VALUES (?,?,?,?,?)',
-                    (notice_id, result['run_id'], key, str(path), destination))
+                    (result['run_id'] + ':' + key, result['run_id'], key, str(path), destination))
         return selected
 
     def changed(self, source, result):
         """True when this result differs from the stored baseline. Never records."""
+        if result.get('result') == 'unknown' or result.get('relevance') == 'out_of_scope':
+            return False
         row = self.db.execute('SELECT fingerprint FROM baseline WHERE rule_id=?', (source['rule_id'],)).fetchone()
         if row is None:
             return False
         return row['fingerprint'] != fingerprint(result.get('matches', []))
+
+    def paired_weather_trigger(self, rule_id, active, temperature_c, drop_c):
+        """Trigger a paired capture when risk starts or temperature drops sharply."""
+        row = self.db.execute('SELECT active,temperature_c FROM paired_weather WHERE rule_id=?', (rule_id,)).fetchone()
+        prior_temperature = row['temperature_c'] if row else None
+        temperature_drop = (temperature_c is not None and prior_temperature is not None
+                            and temperature_c <= prior_temperature - drop_c)
+        trigger = bool((active and (row is None or not row['active'])) or temperature_drop)
+        with self.db:
+            self.db.execute('INSERT INTO paired_weather VALUES (?,?,?,?) ON CONFLICT(rule_id) DO UPDATE SET active=excluded.active,temperature_c=excluded.temperature_c,checked_at=excluded.checked_at',
+                (rule_id, int(active), temperature_c, now()))
+        return trigger
 
     def notices(self, run_id):
         return self.db.execute("SELECT * FROM notices WHERE run_id=? AND state IN ('pending','blocked') ORDER BY rule_id", (run_id,)).fetchall()
