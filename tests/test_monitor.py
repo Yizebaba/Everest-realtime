@@ -96,7 +96,8 @@ def test_same_url_different_rule_ids(store,tmp_path):
     a=result(); b=result(); b['source']['rule_id']='two'
     store.record(a,tmp_path/'a.json','all',destination(CONFIG))
     store.record(b,tmp_path/'b.json','all',destination(CONFIG))
-    assert len(store.notices('run-one'))==2
+    # Notifications require local evidence; bare source records do not queue messages.
+    assert store.notices('run-one') == []
 
 
 def test_new_baseline_no_changed_notice(store,tmp_path):
@@ -109,7 +110,7 @@ def test_failure_preserves_baseline_and_removal_notifies(store,tmp_path):
     store.record(result(),tmp_path/'a.json','changed',destination(CONFIG))
     store.record(result('run-two','', 'unknown'),tmp_path/'b.json','changed',destination(CONFIG))
     r=result('run-three','','not_found')
-    assert store.record(r,tmp_path/'c.json','changed',destination(CONFIG))
+    assert not store.record(r,tmp_path/'c.json','changed',destination(CONFIG))
     assert r['removed']==['Everest flood']
 
 
@@ -136,7 +137,7 @@ def test_cards_required_no_text_fallback(store,tmp_path):
     store.record(result(),tmp_path/'r.json','all',destination(CONFIG))
     sent=[]
     stats=deliver(store,'run-one',CONFIG,SETTINGS,sender=lambda *a:sent.append(a))
-    assert stats['blocked']==1 and not sent
+    assert stats['blocked']==0 and not sent
 
 
 def test_changed_destination_blocks_before_upload(store,tmp_path):
@@ -198,3 +199,30 @@ def test_cli_full_run_isolated(monkeypatch,tmp_path):
     assert monitor.main(['--data-dir',str(tmp_path),'run','--all','--source','news-05','--notify','all'])==0
     latest=read_json(tmp_path/'latest.json')
     assert latest['completed']==1 and Path(latest['report']).exists()
+
+
+def test_wechat_destination_and_delivery(store, tmp_path):
+    wx_cfg = {
+        'wechat': {
+            'app_id': 'test_app',
+            'app_secret': 'test_secret',
+            'template_id': 'test_tmpl',
+            'touser': ['test_openid']
+        }
+    }
+    assert destination(wx_cfg)
+    r = result()
+    from PIL import Image
+    path = tmp_path / 'page.png'
+    Image.new('RGB', (50, 50), 'blue').save(path)
+    r['screenshot'] = {'captured_at': r['retrieved_at']}
+    make_cards(r, tmp_path, SETTINGS)
+    r['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in r['cards']}
+    store.record(r, tmp_path / 'r.json', 'all', destination(wx_cfg))
+    sent = []
+    def mock_sender(c, t, b):
+        sent.append((c, t, b))
+        return {'code': 0}
+    stats = deliver(store, 'run-one', wx_cfg, SETTINGS, uploader=lambda *a: 'https://example.test/card.png', sender=mock_sender, sleeper=lambda _: None)
+    assert stats['accepted'] == 1 and len(sent) == 1
+
