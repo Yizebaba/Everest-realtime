@@ -343,15 +343,15 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
         </header>
 
-        <!-- 主标题区域：底色放宽，文字向右内收 28px，仅保留中英双语 -->
+        <!-- 主标题区域：底色放宽，文字向右内收 28px，标题下方显示尼泊尔语官方名称 -->
         <section class="event-card">
             <h1 class="event-title-main">
                 <a href="{url_esc}" target="_blank">{title_esc}</a>
             </h1>
             <div class="intl-subtitle-grid">
                 <div class="sub-item">
-                    <span class="sub-tag">English</span>
-                    <span class="sub-text-en">NASA Earth Observatory Spaceborne Telemetry Array</span>
+                    <span class="sub-tag">नेपाली</span>
+                    <span class="sub-text-ne">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</span>
                 </div>
             </div>
         </section>
@@ -375,11 +375,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             {''.join(cards_html)}
         </main>
 
-        <!-- 页面最底部细线署名：保留尼泊尔语官方名称 -->
+        <!-- 页面最底部细线署名：中文、英文、尼泊尔语均统一包含 WeChat: No1-Shine -->
         <footer class="footer-banner">
-            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
-            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
-            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
+            <div class="ft-lead">WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
+            <div class="ft-sub">WeChat: No1-Shine ｜ Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
+            <div class="ft-nepali">WeChat: No1-Shine ｜ सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>
