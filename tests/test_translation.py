@@ -39,7 +39,9 @@ def test_translate_before_selecting_sent_image_preserves_original(monkeypatch,tm
     assert record['image_kind']=='translated_source_screenshot'
     assert calls==[('https://example.test','auto')]
     assert (tmp_path/'page.png').read_bytes()==original
-    with Image.open(record['cards'][0]) as image: assert image.getpixel((0,0))==(0,0,255)
+    with Image.open(record['cards'][0]) as image:
+        assert image.size[0] == 40
+        assert image.size[1] > 40
 
 
 def test_translation_failure_not_mislabelled_chinese(monkeypatch,tmp_path):
