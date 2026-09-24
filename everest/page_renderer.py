@@ -76,7 +76,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
     <title>{title_esc}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Devanagari:wght@400;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {{
             --bg-page: #ffffff;
@@ -323,6 +323,14 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         .ft-sub {{
             font-size: 12px;
             color: var(--text-muted);
+            margin-bottom: 4px;
+        }}
+
+        .ft-nepali {{
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
         }}
     </style>
 </head>
@@ -365,10 +373,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             {''.join(cards_html)}
         </main>
 
-        <!-- 页面最底部细线署名：取消尼泊尔语 -->
+        <!-- 页面最底部细线署名：保留尼泊尔语官方名称 -->
         <footer class="footer-banner">
             <div class="ft-lead">{sig_esc}</div>
             <div class="ft-sub">Qomolangma Multi-Hazard Monitoring & Observation Platform</div>
+            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>
