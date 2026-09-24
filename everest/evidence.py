@@ -184,22 +184,12 @@ def make_cards(result, folder, settings):
         captured = [view for view in map_views if view.get('image') and not view.get('error')]
         if captured:
             result['map_view_items'] = []
-            total_layers = len(captured)
             for idx, view in enumerate(captured, 1):
                 target = folder / f"mapview-{view['layer']}.png"
                 layer_cn = view.get('layer_name') or LAYER_NAMES.get(view['layer'], view['layer'])
-                layer_banner = f"珠峰视角图层（共 {total_layers} 层） | 第 {idx} 层：{layer_cn}"
-                is_last_card = (idx == total_layers)
                 with Image.open(view['image']) as img:
-                    signed_img = _decorate_evidence_card(
-                        img.convert('RGB'),
-                        source_url=view.get('view_url') or result['source']['url'],
-                        retrieved_at=result.get('retrieved_at'),
-                        layer_title=layer_banner,
-                        font_path=settings.get('font'),
-                        include_signature=is_last_card
-                    )
-                    signed_img.save(target)
+                    # Clean pure view without banner clutter on the image itself
+                    img.convert('RGB').save(target)
                 result['cards'].append(str(target))
                 result['map_view_items'].append({
                     'path': str(target),
@@ -210,6 +200,8 @@ def make_cards(result, folder, settings):
             result['image_kind'] = 'everest_map_view'
             result['map_view_layers'] = [view['layer'] for view in captured]
             return result
+        result['screenshot_error'] = 'No Everest map view captured'
+        return result
         result['screenshot_error'] = 'No Everest map view captured'
         return result
     override = settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
@@ -289,14 +281,8 @@ def make_cards(result, folder, settings):
                 image = image.crop((0, 0, image.width, 1600))
             prefix = 'chinese' if result['image_kind'] == 'translated_source_screenshot' else 'original'
             target = folder / f'{prefix}-01.png'
-            source_url = result.get('original_capture', {}).get('final_url') or result['source']['url']
-            signed_image = _decorate_evidence_card(
-                image,
-                source_url=source_url,
-                retrieved_at=result.get('retrieved_at'),
-                font_path=settings.get('font')
-            )
-            signed_image.save(target)
+            # Pure clean image pixels, let HTML page handle all headers and footers
+            image.save(target)
             result['cards'].append(str(target))
     return result
 
