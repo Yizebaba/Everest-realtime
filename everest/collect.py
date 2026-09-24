@@ -23,6 +23,13 @@ SCOPE_TERMS = (
 
 def classify_matches(source, matches):
     """Separate locally relevant event candidates from raw source content."""
+    # 1. Fast earthquake & national warning channels: monitor ALL new global/national events directly into deduplication
+    rid = source.get('rule_id', '')
+    if rid in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'platform-10', 'special-02'):
+        if matches:
+            return list(dict.fromkeys(matches)), 'in_scope', 'candidate'
+        return [], 'out_of_scope', 'not_event'
+
     if source.get('category_id') == 'satellite':
         return [], 'out_of_scope', 'product_update'
     if source.get('category_id') == 'news':
@@ -125,17 +132,28 @@ def extract(body, ctype, source, defaults, encoding=None):
     return title, content, matches, source_time
 
 
-def fetch_page(url, settings):
-    started = time.monotonic()
-    with requests.get(url, timeout=settings['timeout_seconds'], stream=True,
-                      headers={'User-Agent': 'Everest-realtime/4.0'}) as response:
-        response.raise_for_status()
-        payload = bytearray()
-        for chunk in response.iter_content(65536):
-            payload.extend(chunk)
-            if len(payload) > settings['max_response_bytes'] or time.monotonic()-started > 90:
-                raise ValueError('Response exceeds configured size/time budget')
-        return bytes(payload), response.headers.get('Content-Type','').split(';')[0], response.url, response.encoding if 'charset=' in response.headers.get('Content-Type','').lower() else None
+def fetch_page(url, settings, max_retries=3):
+    """Fetch page with automatic exponential backoff retry on timeouts, 5xx errors, or network glitches."""
+    last_exc = None
+    for attempt in range(1, max_retries + 1):
+        started = time.monotonic()
+        try:
+            with requests.get(url, timeout=settings['timeout_seconds'], stream=True,
+                              headers={'User-Agent': 'Everest-realtime/4.0 (Windows NT 10.0; Win64; x64)'}) as response:
+                response.raise_for_status()
+                payload = bytearray()
+                for chunk in response.iter_content(65536):
+                    payload.extend(chunk)
+                    if len(payload) > settings['max_response_bytes'] or time.monotonic() - started > 90:
+                        raise ValueError('Response exceeds configured size/time budget')
+                return bytes(payload), response.headers.get('Content-Type','').split(';')[0], response.url, response.encoding if 'charset=' in response.headers.get('Content-Type','').lower() else None
+        except Exception as exc:
+            last_exc = exc
+            if attempt < max_retries:
+                sleep_s = attempt * 2  # retry backoff: 2s, 4s
+                time.sleep(sleep_s)
+            else:
+                raise last_exc
 
 
 def collect(source, defaults, settings, folder, run_id):
