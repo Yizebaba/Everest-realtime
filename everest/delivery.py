@@ -1,3 +1,4 @@
+import base64
 import datetime as dt
 import hashlib
 import json
@@ -79,37 +80,34 @@ def _upload_tmpfiles(path, settings):
     return url.replace('tmpfiles.org/', 'tmpfiles.org/dl/')
 
 
-def _upload_r2(path, config):
-    r2_cfg = config.get('r2') or {}
-    account_id = r2_cfg.get('account_id')
-    access_key = r2_cfg.get('access_key_id')
-    secret_key = r2_cfg.get('secret_access_key')
-    bucket_name = r2_cfg.get('bucket_name', 'zhufeng-monitor')
-    public_domain = r2_cfg.get('public_domain', '').rstrip('/')
-    if not (account_id and access_key and secret_key and public_domain):
-        raise ValueError('Incomplete R2 configuration')
-    import boto3
-    from botocore.config import Config
-    endpoint = f'https://{account_id}.r2.cloudflarestorage.com'
-    s3 = boto3.client(
-        service_name='s3',
-        endpoint_url=endpoint,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-        region_name='auto',
-        config=Config(s3={'addressing_style': 'path'})
-    )
-    p = Path(path)
-    file_name = f"{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%d_%H%M%S')}_{p.name}"
-    content_type = 'image/png' if p.suffix.lower() == '.png' else 'application/octet-stream'
-    with p.open('rb') as f:
-        s3.put_object(
-            Bucket=bucket_name,
-            Key=file_name,
-            Body=f.read(),
-            ContentType=content_type
-        )
-    return f"{public_domain}/{file_name}"
+def _deploy_to_github_pages(file_name, html_content, config):
+    gh = config.get('github_pages') or {}
+    owner = gh.get('owner', 'Yizebaba')
+    repo = gh.get('repo', 'Everest-realtime')
+    base_url = gh.get('base_url', f"https://{owner}.github.io/{repo}").rstrip('/')
+    token_file = Path('/app/github_token.txt')
+    if not token_file.exists():
+        token_file = Path('D:/Zhufenjianche/github_token.txt')
+    if not token_file.exists():
+        return None
+    token = token_file.read_text(encoding='utf-8').strip()
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'Everest-Pages-Publisher'
+    }
+    rel_path = f"evidence/{file_name}"
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{rel_path}"
+    content_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
+    get_res = requests.get(url, headers=headers)
+    sha = get_res.json().get('sha') if get_res.status_code == 200 else None
+    payload = {'message': f'publish: {rel_path} for wechat notification', 'content': content_b64}
+    if sha:
+        payload['sha'] = sha
+    res = requests.put(url, headers=headers, json=payload, timeout=20)
+    if res.status_code in (200, 201):
+        return f"{base_url}/{rel_path}"
+    return None
 
 
 def _upload_imgbb(path, config):
@@ -133,7 +131,7 @@ def _upload_imgbb(path, config):
 
 
 def upload(path, settings, config=None):
-    """Try ImgBB first (direct open in WeChat without interception), then Cloudflare R2, then fallback."""
+    """Upload via ImgBB as primary public image CDN."""
     if not settings.get('delivery_enabled', False):
         raise ValueError('External media delivery is disabled; evidence remains local')
     if config and (config.get('imgbb') or {}).get('key'):
@@ -143,13 +141,6 @@ def upload(path, settings, config=None):
                 return result
         except Exception as exc:
             print(f'ImgBB upload warning: {exc}', flush=True)
-    if config and (config.get('r2') or {}).get('access_key_id'):
-        try:
-            result = _upload_r2(path, config)
-            if result and result.startswith('https://'):
-                return result
-        except Exception as exc:
-            print(f'R2 upload warning: {exc}', flush=True)
     hosts = [(_upload_uguu, settings.get('image_upload_url')),
              (_upload_tmpfiles, settings.get('image_upload_fallback'))]
     errors = []
@@ -349,7 +340,8 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
                 'layer_target_url': source_url
             })
 
-        # Save HTML evidence view locally for historical auditing
+        # Publish HTML evidence page to GitHub Pages
+        final_jump_urls = urls
         try:
             html_content = render_notification_page(
                 title=f"产品名称 · {source['name']}",
@@ -358,16 +350,17 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
                 image_cards=evidence_cards,
                 signature=SIGNATURE
             )
-            evidence_dir = Path('/app/data/evidence')
-            evidence_dir.mkdir(parents=True, exist_ok=True)
-            (evidence_dir / f"{key}.html").write_text(html_content, encoding='utf-8')
+            file_name = f"{key}_{int(time.time())}.html"
+            gh_page_url = _deploy_to_github_pages(file_name, html_content, config)
+            if gh_page_url:
+                final_jump_urls = [gh_page_url]
         except Exception as exc:
-            print(f"Local evidence render note: {exc}", flush=True)
+            print(f"GitHub Pages deploy note: {exc}", flush=True)
 
         store.update_notice(key, 'sending')
         try:
             try:
-                receipt = sender(config, '珠峰监控 · '+source['name'], text, urls)
+                receipt = sender(config, '珠峰监控 · '+source['name'], text, final_jump_urls)
             except TypeError:
                 receipt = sender(config, '珠峰监控 · '+source['name'], text)
         except Exception as exc:
