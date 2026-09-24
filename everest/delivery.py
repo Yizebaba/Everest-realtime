@@ -200,8 +200,18 @@ def _send_wechat(config, title, text, image_urls=None):
     url = f'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={token}'
 
     m_time = re.search(r'监测时间：([^\n]+)', text)
-    time_raw = m_time.group(1) if m_time else dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    time_clean = time_raw.replace('T', ' ')[:19]
+    time_raw = m_time.group(1) if m_time else ''
+    
+    # 微信卡片时间：统一换算为北京时间 (UTC+8) 便于手机即时查看
+    card_time_bj = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    if time_raw:
+        try:
+            t_iso = time_raw.replace('Z', '+00:00')
+            dt_obj = dt.datetime.fromisoformat(t_iso)
+            card_time_bj = dt_obj.astimezone(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            card_time_bj = time_raw.replace('T', ' ')[:19]
+
     source_name = title.replace('珠峰监控 · ', '').replace('产品名称 · ', '')
 
     # Map parameters for standard and custom category templates
@@ -212,14 +222,14 @@ def _send_wechat(config, title, text, image_urls=None):
         'first': {'value': card_title, 'color': '#173177'},
         'keyword1': {'value': source_name, 'color': '#173177'},
         'keyword2': {'value': '监测到自然环境数据/遥感画面更新', 'color': '#e02020'},
-        'keyword3': {'value': time_clean, 'color': '#888888'},
+        'keyword3': {'value': card_time_bj, 'color': '#888888'},
         'remark': {'value': 'vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］', 'color': '#666666'},
         'title': {'value': card_title},
         'content': {'value': text[:100] + '...' if len(text) > 100 else text},
-        'time': {'value': time_clean},
+        'time': {'value': card_time_bj},
         # Category template keywords (e.g. thing16, time6 for 工单审批通知/运维)
         'thing16': {'value': prod_name},
-        'time6': {'value': time_clean}
+        'time6': {'value': card_time_bj}
     }
 
     # If multiple images (multi-layer), send one template message for each layer image
