@@ -203,14 +203,6 @@ def _send_wechat(config, title, text, image_urls=None):
     token = _get_wechat_token(app_id, app_secret)
     url = f'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={token}'
 
-    if image_urls and len(image_urls) > 0 and str(image_urls[0]).startswith('http'):
-        target_url = image_urls[0]
-    else:
-        m_url = re.search(r'来源：(\S+)', text)
-        target_url = m_url.group(1) if m_url else ''
-        if target_url:
-            target_url = target_url.replace('localhost', '192.168.1.10').replace('127.0.0.1', '192.168.1.10')
-
     m_time = re.search(r'监测时间：([^\n]+)', text)
     time_raw = m_time.group(1) if m_time else dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     time_clean = time_raw.replace('T', ' ')[:19]
@@ -234,20 +226,24 @@ def _send_wechat(config, title, text, image_urls=None):
         'time6': {'value': time_clean}
     }
 
+    # If multiple images (multi-layer), send one template message for each layer image
+    urls_to_send = image_urls if (image_urls and len(image_urls) > 0) else ['']
     last_res = None
-    for openid in tousers:
-        payload = {
-            'touser': openid,
-            'template_id': template_id,
-            'url': target_url,
-            'data': data
-        }
-        res = requests.post(url, json=payload, timeout=20)
-        res.raise_for_status()
-        ret = res.json()
-        if ret.get('errcode') != 0:
-            return {'code': ret.get('errcode', -1), 'message': ret.get('errmsg')}
-        last_res = ret
+    for target_url in urls_to_send:
+        for openid in tousers:
+            payload = {
+                'touser': openid,
+                'template_id': template_id,
+                'url': target_url,
+                'data': data
+            }
+            res = requests.post(url, json=payload, timeout=20)
+            res.raise_for_status()
+            ret = res.json()
+            if ret.get('errcode') != 0:
+                return {'code': ret.get('errcode', -1), 'message': ret.get('errmsg')}
+            last_res = ret
+            time.sleep(0.5)
     return {'code': 0, 'data': last_res}
 
 
