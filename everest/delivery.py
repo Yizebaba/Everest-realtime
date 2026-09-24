@@ -310,15 +310,7 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         source = record['source']
         source_url = record.get('original_capture', {}).get('final_url') or source['url']
         retrieved_raw = record.get('retrieved_at')
-        if retrieved_raw:
-            try:
-                dt_obj = dt.datetime.fromisoformat(retrieved_raw)
-                bj_time = dt_obj.astimezone(dt.timezone(dt.timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
-                time_line = f"监测时间：{bj_time}\n"
-            except Exception:
-                time_line = f"监测时间：{retrieved_raw}\n"
-        else:
-            time_line = ""
+        time_line = f"监测时间：{retrieved_raw}\n" if retrieved_raw else ""
         text = f"来源：{source_url}\n{time_line}\n"
         layer_names_list = []
         if record.get('image_kind') == 'everest_map_view':
