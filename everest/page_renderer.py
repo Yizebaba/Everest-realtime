@@ -2,12 +2,11 @@ import html
 
 def render_notification_page(title, source_url, time_str, image_cards, signature='vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
     """
-    World-Class Trilingual Academic Style D (Pure White, Skyline Editorial, No-Border Header Box).
+    World-Class Clean Style D (Bilingual Chinese & English, Devanagari/Nepali completely removed).
     image_cards: list of dicts, each like:
     {
         'layer_cn': '真彩色遥感底图',
         'layer_en': 'MODIS Terra True Color',
-        'layer_ne': 'मोडिस टेरा वास्तविक रङ उपग्रह छवि',
         'layer_index': 1,
         'layer_total': 2,
         'image_url': 'https://...',
@@ -29,7 +28,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             img_url = card
             cn = ""
             en = ""
-            ne = ""
             idx = i
             tot = total
             jump_url = source_url
@@ -37,19 +35,16 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             img_url = card.get('image_url', '')
             cn = card.get('layer_cn', '')
             en = card.get('layer_en', '')
-            ne = card.get('layer_ne', '')
             idx = card.get('layer_index', i)
             tot = card.get('layer_total', total)
             jump_url = card.get('layer_target_url') or source_url
         
-        # Build layer trilingual heading
+        # Build layer bilingual heading (Chinese + English only)
         layer_parts = []
         if cn:
             layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">{esc(cn)}</a>')
         if en:
             layer_parts.append(f'<span class="lang-en-text">{esc(en)}</span>')
-        if ne:
-            layer_parts.append(f'<span class="lang-ne-text">{esc(ne)}</span>')
             
         if not layer_parts and is_multi:
             layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">图层 {idx}</a>')
@@ -81,7 +76,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
     <title>{title_esc}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {{
             --bg-page: #ffffff;
@@ -100,7 +95,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         body {{
             background-color: var(--bg-page);
             color: var(--text-body);
-            font-family: 'Inter', 'Noto Sans SC', 'Noto Sans Devanagari', -apple-system, sans-serif;
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
             padding: 24px 20px 60px;
             line-height: 1.6;
         }}
@@ -110,17 +105,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             margin: 0 auto;
         }}
 
-        /* 顶部机构标头 */
+        /* 顶部机构标头（取消第三行，仅保留纯净单行英文） */
         .world-topbar {{
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-line);
             margin-bottom: 28px;
-        }}
-
-        .world-names {{
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
         }}
 
         .name-en {{
@@ -133,17 +122,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             line-height: 1.2;
         }}
 
-        .name-dual {{
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }}
-
-        .name-dual span {{
-            color: var(--accent-blue);
-        }}
-
-        /* 主标题区域：底色放宽，内部文字 padding-left: 28px 向右黄金留白 */
+        /* 主标题区域：底色放宽，文字向右内收 28px，取消尼泊尔语 */
         .event-card {{
             background: var(--bg-muted);
             border: none;
@@ -160,7 +139,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 900;
             color: var(--text-title);
             letter-spacing: -0.5px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }}
 
         .event-title-main a {{
@@ -173,9 +152,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         }}
 
         .intl-subtitle-grid {{
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 6px;
+            display: flex;
+            align-items: center;
         }}
 
         .sub-item {{
@@ -202,16 +180,10 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 500;
         }}
 
-        .sub-text-ne {{
-            color: var(--text-muted);
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            font-weight: 600;
-        }}
-
-        /* 来源/时间/范围：彻底放宽 */
+        /* 来源/时间：横向放宽，取消 Scope（范围） */
         .meta-metrics {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
             background: transparent;
             border: none;
@@ -306,13 +278,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 500;
         }}
 
-        .lang-ne-text {{
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-        }}
-
         .flow-index-tag {{
             font-family: 'IBM Plex Mono', monospace;
             font-size: 12px;
@@ -339,7 +304,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             display: block;
         }}
 
-        /* 页面底部署名 */
+        /* 页面底部署名：中英双语，取消尼泊尔语 */
         .footer-banner {{
             margin-top: 50px;
             padding: 24px 16px 12px;
@@ -358,30 +323,17 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         .ft-sub {{
             font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 4px;
-        }}
-
-        .ft-nepali {{
-            font-family: 'Noto Sans Devanagari', sans-serif;
-            font-size: 13px;
-            color: var(--text-light);
-            font-weight: 600;
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 顶部机构名 -->
+        <!-- 顶部机构名（纯净单行英文） -->
         <header class="world-topbar">
-            <div class="world-names">
-                <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
-                <div class="name-dual">
-                    <span>珠穆朗玛峰</span> · <span>सगरमाथा</span> · <span>CHOMOLUNGMA</span>
-                </div>
-            </div>
+            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
         </header>
 
-        <!-- 主标题区域：底色放宽，文字向右内收 28px -->
+        <!-- 主标题区域：底色放宽，文字向右内收 28px，仅保留中英双语 -->
         <section class="event-card">
             <h1 class="event-title-main">
                 <a href="{url_esc}" target="_blank">{title_esc}</a>
@@ -391,28 +343,20 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                     <span class="sub-tag">English</span>
                     <span class="sub-text-en">NASA Earth Observatory Spaceborne Telemetry Array</span>
                 </div>
-                <div class="sub-item">
-                    <span class="sub-tag">नेपाली</span>
-                    <span class="sub-text-ne">नासा पृथ्वी वेधशाला अन्तरिक्ष-आधारित टेलिमेट्री अनुगमन</span>
-                </div>
             </div>
         </section>
 
-        <!-- 来源/时间/范围：横向放宽 -->
+        <!-- 来源/时间：横向放宽，取消 Scope（范围） -->
         <div class="meta-metrics">
             <div class="metric">
-                <span class="metric-label">Source / स्रोत लिङ्क</span>
+                <span class="metric-label">Source</span>
                 <span class="metric-val">
                     <a href="{url_esc}" target="_blank">{url_esc}</a>
                 </span>
             </div>
             <div class="metric">
-                <span class="metric-label">Observed Time / अवलोकन समय</span>
+                <span class="metric-label">Observed Time</span>
                 <span class="metric-val">{time_esc}</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Scope / निगरानी क्षेत्र</span>
-                <span class="metric-val">珠峰-昆布冰冻圈 / Everest-Khumbu Cryosphere</span>
             </div>
         </div>
 
@@ -421,11 +365,10 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             {''.join(cards_html)}
         </main>
 
-        <!-- 页面最底部细线署名 -->
+        <!-- 页面最底部细线署名：取消尼泊尔语 -->
         <footer class="footer-banner">
             <div class="ft-lead">{sig_esc}</div>
             <div class="ft-sub">Qomolangma Multi-Hazard Monitoring & Observation Platform</div>
-            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>
@@ -438,7 +381,6 @@ def build_evidence_page(title, source_url, time_str, image_urls, layer_names=Non
         cards.append({
             'layer_cn': name,
             'layer_en': '',
-            'layer_ne': '',
             'layer_index': i + 1,
             'layer_total': len(image_urls),
             'image_url': u,
