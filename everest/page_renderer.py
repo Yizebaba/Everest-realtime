@@ -376,7 +376,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
 
         <!-- 页面最底部细线署名：保留尼泊尔语官方名称 -->
         <footer class="footer-banner">
-            <div class="ft-lead">WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
             <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
             <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
