@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+    <title>产品名称 · NASA Worldview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Devanagari:wght@400;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #ffffff;
+            --bg-muted: #f8fafc;
+            --border-light: #e5e7eb;
+            --border-line: #cbd5e1;
+            --accent-blue: #0284c7;
+            --accent-navy: #0f172a;
+            --text-title: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+            padding: 24px 20px 60px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        /* 顶部机构标头（取消第三行，仅保留纯净单行英文） */
+        .world-topbar {
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-line);
+            margin-bottom: 28px;
+        }
+
+        .name-en {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-title);
+            line-height: 1.2;
+        }
+
+        /* 主标题区域：底色放宽，文字向右内收 28px，取消尼泊尔语 */
+        .event-card {
+            background: var(--bg-muted);
+            border: none;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: none;
+        }
+
+        .event-title-main {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.2px;
+            margin-bottom: 6px;
+        }
+
+        .event-title-main a {
+            color: var(--text-title);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .event-title-main a:hover {
+            color: var(--accent-blue);
+        }
+
+        .intl-subtitle-grid {
+            display: flex;
+            align-items: center;
+        }
+
+        .sub-item {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .sub-text-en {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sub-text-ne {
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* 来源/时间：单行横排流动，来源在上，时间在下，不换行截断 */
+        .meta-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 0 0 20px 0;
+            margin-bottom: 36px;
+        }
+
+        .metric {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 15px;
+        }
+
+        .metric-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-title);
+            flex-shrink: 0;
+            letter-spacing: 0;
+        }
+
+        .metric-val {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-title);
+            word-break: break-all;
+        }
+
+        .metric-val a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* 图层流 */
+        .layer-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .flow-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .flow-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 12px;
+            padding: 12px 0 10px 0;
+            border-bottom: 1.5px solid var(--text-title);
+        }
+
+        .layer-heading-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: nowrap;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+            overflow-x: auto;
+        }
+
+        .layer-title-link {
+            font-size: 19px;
+            font-weight: 900;
+            color: var(--text-title);
+            text-decoration: none;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }
+        .layer-title-link:hover { color: var(--accent-blue); }
+
+        .divider-slash {
+            color: var(--border-line);
+            font-weight: 300;
+            font-size: 15px;
+        }
+
+        .lang-en-text {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .flow-index-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-title);
+            background: #f1f5f9;
+            border: 1px solid var(--border-line);
+            padding: 4px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .flow-image-box {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .flow-image-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* 页面底部署名：中文、英文和尼泊尔语使用同一署名。 */
+        .footer-banner {
+            margin-top: 50px;
+            padding: 24px 16px 12px;
+            border-top: 1px solid var(--border-line);
+            text-align: center;
+        }
+
+        .ft-lead {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-title);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .ft-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .ft-nepali {
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部机构名（纯净单行英文） -->
+        <header class="world-topbar">
+            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
+        </header>
+
+        <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
+        <section class="event-card">
+            <h1 class="event-title-main">
+                <a href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank">产品名称 · NASA Worldview</a>
+            </h1>
+            <div class="intl-subtitle-grid">
+                <div class="sub-item">
+                    <span class="sub-tag">नेपाली</span>
+                    <span class="sub-text-ne">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 来源与观测时间。 -->
+        <div class="meta-metrics">
+            <div class="metric">
+                <span class="metric-label">来源：</span>
+                <span class="metric-val">
+                    <a href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank">https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z</a>
+                </span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">观测时间：</span>
+                <span class="metric-val">2026-09-25 20:17:54 EDT (UTC-0400)</span>
+            </div>
+        </div>
+
+        <!-- 多图层流 -->
+        <main class="layer-flow">
+            
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">MODIS Terra 真彩色遥感底图</a>
+            </div>
+            <div class="flow-index-tag">LAYER 01 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-true_color_modis.png" alt="产品名称 · NASA Worldview 监测截图 1" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">MODIS Terra 积雪覆盖与冰川反射 (NDSI)</a>
+            </div>
+            <div class="flow-index-tag">LAYER 02 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-snow_cover_ndsi.png" alt="产品名称 · NASA Worldview 监测截图 2" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">MODIS Terra 白天地表与冰面温度 (LST Day)</a>
+            </div>
+            <div class="flow-index-tag">LAYER 03 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-surface_temp_day.png" alt="产品名称 · NASA Worldview 监测截图 3" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">MODIS Terra 夜间地表与冰面温度 (LST Night)</a>
+            </div>
+            <div class="flow-index-tag">LAYER 04 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-surface_temp_night.png" alt="产品名称 · NASA Worldview 监测截图 4" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">Suomi NPP / VIIRS 高清真彩</a>
+            </div>
+            <div class="flow-index-tag">LAYER 05 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-viirs_hires_truecolor.png" alt="产品名称 · NASA Worldview 监测截图 5" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://worldview.earthdata.nasa.gov/?v=-172.57217022917158,-17.810545353528806,-33.427829770828424,48.2105453535288&amp;z=4&amp;e=EONET_24721,2026-09-21&amp;efs=true&amp;efa=false&amp;efd=2026-05-25,2026-09-22&amp;efc=dustHaze,manmade,seaLakeIce,severeStorms,snow,volcanoes,waterColor,floods,wildfires&amp;l=Reference_Labels_15m,DoS_International_Boundaries,Coastlines_15m,IMERG_Precipitation_Rate_30min,IMERG_Precipitation_Rate(hidden),VIIRS_NOAA20_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_NOAA20_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_DayNightBand_At_Sensor_Radiance(hidden),VIIRS_SNPP_DayNightBand_AtSensor_M15(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_NOAA21_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor,BlueMarble_NextGeneration(hidden),BlueMarble_ShadedRelief(hidden)&amp;lg=true&amp;t=2026-09-21-T00%3A00%3A59Z" target="_blank" rel="noopener noreferrer">NOAA-20 VIIRS 375米高分辨率热异常/火点</a>
+            </div>
+            <div class="flow-index-tag">LAYER 06 / 06</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://raw.githubusercontent.com/Yizebaba/Everest-realtime/main/evidence/images/20260926T000913Z-d12f58_satellite-01_mapview-fires_thermal_375m.png" alt="产品名称 · NASA Worldview 监测截图 6" />
+            </div>
+        </article>
+        
+        </main>
+
+        <!-- 页面最底部细线署名：中文、英文、尼泊尔语统一使用同一署名 -->
+        <footer class="footer-banner">
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
+            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
+            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
+        </footer>
+    </div>
+</body>
+</html>
