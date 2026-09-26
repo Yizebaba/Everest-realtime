@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#e2e8f0"/>
+<rect x="40" y="40" width="1200" height="640" rx="12" fill="#0f172a"/>
+<text x="80" y="130" fill="#38bdf8" font-family="Arial,sans-serif" font-size="30">V2 EVIDENCE TEST IMAGE</text>
+<text x="80" y="220" fill="#f8fafc" font-family="Arial,sans-serif" font-size="52">MT. EVEREST OBSERVATION INITIATIVE</text>
+<text x="80" y="310" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="30">Zhufenjianche V2 image-host test</text>
+<text x="80" y="390" fill="#94a3b8" font-family="Arial,sans-serif" font-size="26">This is a visible test image, not a monitoring event.</text>
+<circle cx="1060" cy="490" r="86" fill="#0284c7"/><path d="M1015 490l32 32 60-72" fill="none" stroke="white" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
