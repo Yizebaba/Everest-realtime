@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+    <title>产品名称 · Windy 珠峰多图层</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Devanagari:wght@400;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-page: #ffffff; --bg-muted: #f8fafc; --border-light: #e5e7eb; --border-line: #cbd5e1; --accent-blue: #0284c7; --text-title: #0f172a; --text-body: #334155; --text-muted: #64748b; --text-light: #94a3b8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-page); color: var(--text-body); font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif; padding: 24px 20px 60px; line-height: 1.6; }
+        .container { max-width: 1120px; margin: 0 auto; }
+        .world-topbar { padding-bottom: 16px; border-bottom: 1px solid var(--border-line); margin-bottom: 28px; }
+        .name-en { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-title); line-height: 1.2; }
+        .event-card { background: var(--bg-muted); border: none; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); border-radius: 0; padding: 24px 28px; margin-bottom: 24px; box-shadow: none; }
+        .event-title-main { font-size: 17px; font-weight: 800; color: var(--text-title); letter-spacing: -0.2px; margin-bottom: 6px; }
+        .event-title-main a { color: var(--text-title); text-decoration: none; transition: color 0.15s; }
+        .event-title-main a:hover { color: var(--accent-blue); }
+        .intl-subtitle-grid { display: flex; align-items: center; }
+        .sub-item { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .sub-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #ffffff; border: 1px solid var(--border-light); color: var(--text-muted); letter-spacing: 0.5px; }
+        .sub-text-ne { font-family: 'IBM Plex Sans Devanagari', sans-serif; color: var(--text-muted); font-weight: 500; }
+        .meta-metrics { display: flex; flex-direction: column; gap: 12px; background: transparent; border: none; border-bottom: 1px solid var(--border-light); border-radius: 0; padding: 0 0 20px 0; margin-bottom: 36px; }
+        .metric { display: flex; align-items: baseline; gap: 6px; font-size: 15px; }
+        .metric-label { font-size: 15px; font-weight: 700; color: var(--text-title); flex-shrink: 0; }
+        .metric-val { font-size: 15px; font-weight: 500; color: var(--text-title); word-break: break-all; }
+        .metric-val a { color: var(--accent-blue); text-decoration: underline; text-underline-offset: 3px; }
+        .layer-flow { display: flex; flex-direction: column; gap: 40px; }
+        .flow-card { background: #ffffff; border: none; border-radius: 0; padding: 0; box-shadow: none; }
+        .flow-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; padding: 12px 0 10px 0; border-bottom: 1.5px solid var(--text-title); }
+        .layer-heading-row { display: flex; align-items: baseline; flex-wrap: nowrap; gap: 12px; flex: 1; min-width: 0; overflow-x: auto; }
+        .layer-title-link { font-size: 19px; font-weight: 900; color: var(--text-title); text-decoration: none; letter-spacing: -0.2px; white-space: nowrap; transition: color 0.15s; }
+        .layer-title-link:hover { color: var(--accent-blue); }
+        .divider-slash { color: var(--border-line); font-weight: 300; font-size: 15px; }
+        .lang-en-text { font-family: 'Inter', sans-serif; color: var(--text-muted); font-size: 14px; font-weight: 500; white-space: nowrap; }
+        .flow-index-tag { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-title); background: #f1f5f9; border: 1px solid var(--border-line); padding: 4px 12px; border-radius: 4px; white-space: nowrap; }
+        .flow-image-box { background: #ffffff; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .flow-image-box img { width: 100%; height: auto; display: block; }
+        .footer-banner { margin-top: 50px; padding: 24px 16px 12px; border-top: 1px solid var(--border-line); text-align: center; }
+        .ft-lead { font-size: 14px; font-weight: 800; color: var(--text-title); margin-bottom: 6px; letter-spacing: 0.3px; }
+        .ft-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.3px; }
+        .ft-nepali { font-family: 'IBM Plex Sans Devanagari', sans-serif; font-size: 12px; color: var(--text-light); font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="world-topbar"><div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div></header>
+        <section class="event-card">
+            <h1 class="event-title-main"><a href="https://Yizebaba.github.io/Everest-realtime/v2-evidence/weather06_20260927T061709Z-weather-06.html" target="_blank">产品名称 · Windy 珠峰多图层</a></h1>
+            <div class="intl-subtitle-grid"><div class="sub-item"><span class="sub-tag">नेपाली</span><span class="sub-text-ne">सगरमाथा प्राकृतिक वातावरणीय सूचना अनुगमन तथा विश्लेषण प्रणाली (बिटा संस्करण)</span></div></div>
+        </section>
+        <div class="meta-metrics">
+            <div class="metric"><span class="metric-label">来源：</span><span class="metric-val"><a href="https://Yizebaba.github.io/Everest-realtime/v2-evidence/weather06_20260927T061709Z-weather-06.html" target="_blank">https://Yizebaba.github.io/Everest-realtime/v2-evidence/weather06_20260927T061709Z-weather-06.html</a></span></div>
+            <div class="metric"><span class="metric-label">观测时间：</span><span class="metric-val">2026-09-27T06:17:09.879922+00:00</span></div>
+        </div>
+        <main class="layer-flow">
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E7%BD%91%E7%BB%9C%E6%91%84%E5%83%8F%E5%A4%B4-Khumjung-Mount-Everest/webcams/1652187391?clouds,27.817,86.724,9,p:favs" target="_blank" rel="noopener noreferrer">珠峰 Khumjung 摄像头</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Khumjung Webcam</span>
+            </div>
+            <div class="flow-index-tag">LAYER 01 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/01-webcam.png" alt="产品名称 · Windy 珠峰多图层 监测截图 1" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/27.858/86.269/airgram?27.724,86.266,11,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰风力图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Wind Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 02 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/02-wind.png" alt="产品名称 · Windy 珠峰多图层 监测截图 2" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E9%9B%A8%E3%80%81%E9%9B%B7%E6%9A%B4-rain?rain,27.817,86.724,9,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰雨、雷暴图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Rain and Thunderstorms Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 03 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/03-rain.png" alt="产品名称 · Windy 珠峰多图层 监测截图 3" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E6%B8%A9%E5%BA%A6-temp?temp,27.817,86.724,9,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰温度图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Temperature Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 04 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/04-temp.png" alt="产品名称 · Windy 珠峰多图层 监测截图 4" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E9%99%8D%E9%9B%A8%E9%87%8F-rainAccu?rainAccu,27.817,86.724,9,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰降雨量图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Accumulated Rainfall Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 05 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/05-rainAccu.png" alt="产品名称 · Windy 珠峰多图层 监测截图 5" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E7%A7%AF%E9%9B%AA%E6%B7%B1%E5%BA%A6-snowcover?snowcover,27.817,86.724,9,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰积雪深度图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Snow Depth Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 06 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/06-snowcover.png" alt="产品名称 · Windy 珠峰多图层 监测截图 6" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E8%8F%9C%E5%8D%95/menu?ptype,27.817,86.724,9,p:favs,m:erQaizH" target="_blank" rel="noopener noreferrer">珠峰降水类型图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Precipitation Type Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 07 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/07-ptype.png" alt="产品名称 · Windy 珠峰多图层 监测截图 7" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E8%83%BD%E8%A7%81%E5%BA%A6-visibility?visibility,27.817,86.724,8,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰能见度图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Visibility Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 08 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/08-visibility.png" alt="产品名称 · Windy 珠峰多图层 监测截图 8" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E5%B0%81%E5%86%BB-icing?600h,icing,27.817,86.724,8,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰封冻图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Icing Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 09 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/09-icing.png" alt="产品名称 · Windy 珠峰多图层 监测截图 9" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/%E5%AF%B9%E6%B5%81%E6%9C%89%E6%95%88%E4%BD%8D%E8%83%BD%E6%8C%87%E6%95%B0-cape?cape,27.817,86.724,8,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰对流图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Convective Available Potential Energy Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 10 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/10-cape.png" alt="产品名称 · Windy 珠峰多图层 监测截图 10" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E6%99%B4%E7%A9%BA%E6%B9%8D%E6%B5%81-turbulence?600h,turbulence,27.817,86.724,8,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰晴空湍流图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Clear Air Turbulence Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 11 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/11-turbulence.png" alt="产品名称 · Windy 珠峰多图层 监测截图 11" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E7%B2%89%E5%B0%98%E6%B5%93%E5%BA%A6-dustsm?dustsm,27.817,86.724,6,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰粉尘浓度图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Dust Concentration Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 12 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/12-dustsm.png" alt="产品名称 · Windy 珠峰多图层 监测截图 12" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E5%B9%B2%E6%97%B1%E5%BC%BA%E5%BA%A6-drought40?drought40,27.817,86.724,6,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰干旱检测图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Drought Monitoring Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 13 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/13-drought40.png" alt="产品名称 · Windy 珠峰多图层 监测截图 13" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-%E8%8F%9C%E5%8D%95/menu?efiTemp,28.010,86.720,6,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰极端天气图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Extreme Weather Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 14 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/14-efiTemp.png" alt="产品名称 · Windy 珠峰多图层 监测截图 14" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/plugin/pgmapa?aod550,27.817,86.724,9,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰气溶胶图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest Aerosol Optical Depth Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 15 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/15-aod550.png" alt="产品名称 · Windy 珠峰多图层 监测截图 15" />
+            </div>
+        </article>
+        
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.windy.com/zh/-PM2-5-pm2p5?cams,pm2p5,27.817,86.724,8,p:favs,m:erPaizG" target="_blank" rel="noopener noreferrer">珠峰 PM2.5 图层</a><span class="divider-slash">/</span><span class="lang-en-text">Mt. Everest PM2.5 Layer</span>
+            </div>
+            <div class="flow-index-tag">LAYER 16 / 16</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/weather-06/weather06_20260927T061709Z/16-pm2p5.png" alt="产品名称 · Windy 珠峰多图层 监测截图 16" />
+            </div>
+        </article>
+        </main>
+        <footer class="footer-banner">
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监测分析系统［测试版］</div>
+            <div class="ft-sub">Everest Natural Environmental Information Monitoring and Analysis System (Beta)</div>
+            <div class="ft-nepali">सगरमाथा प्राकृतिक वातावरणीय सूचना अनुगमन तथा विश्लेषण प्रणाली (बिटा संस्करण)</div>
+        </footer>
+    </div>
+</body>
+</html>
