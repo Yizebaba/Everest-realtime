@@ -1,0 +1,307 @@
+name: Build Skill Releases
+
+on:
+  push:
+    tags:
+      - "release-*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Discover skills
+        id: discover
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SKILLS_JSON=$(
+            find . \
+              -type f \
+              -name "SKILL.md" \
+              -not -path "./.git/*" \
+              -not -path "./.github/*" \
+              -not -path "./dist/*" \
+              -not -path "./release-assets/*" \
+              -not -path "./pages/*" \
+              -not -path "./node_modules/*" \
+              -not -path "*/fixtures/*" \
+              -not -path "./tests/*" \
+              -print0 \
+              | while IFS= read -r -d '' skill_file; do
+                  skill_dir="$(dirname "$skill_file")"
+
+                  # Remove the leading "./" for cleaner matrix values.
+                  skill_dir="${skill_dir#./}"
+
+                  # Each skill must live in its own folder.
+                  if [ "$skill_dir" = "." ] || [ -z "$skill_dir" ]; then
+                    echo "SKILL.md must be inside its own skill folder." >&2
+                    echo "Example: adaptive-sales-qualification/SKILL.md" >&2
+                    exit 1
+                  fi
+
+                  printf '%s\n' "$skill_dir"
+                done \
+              | sort -u \
+              | jq -R . \
+              | jq -s -c .
+          )
+
+          if [ "$SKILLS_JSON" = "[]" ]; then
+            echo "No skill folders containing SKILL.md were found."
+            exit 1
+          fi
+
+          echo "Discovered skills:"
+          echo "$SKILLS_JSON" | jq .
+
+          echo "matrix={\"skill\":$SKILLS_JSON}" >> "$GITHUB_OUTPUT"
+
+  package:
+    needs: discover
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Read and validate metadata
+        id: metadata
+        shell: bash
+        env:
+          SKILL_DIR: ${{ matrix.skill }}
+        run: |
+          set -euo pipefail
+
+          SKILL_FILE="$SKILL_DIR/SKILL.md"
+
+          if [ ! -f "$SKILL_FILE" ]; then
+            echo "Missing $SKILL_FILE"
+            exit 1
+          fi
+
+          NAME=$(
+            sed -n '/^---$/,/^---$/p' "$SKILL_FILE" \
+              | sed -n 's/^name:[[:space:]]*["'\'']\?\([^"'\'']*\)["'\'']\?$/\1/p' \
+              | head -n 1 \
+              | xargs
+          )
+
+          VERSION=$(
+            sed -n '/^---$/,/^---$/p' "$SKILL_FILE" \
+              | sed -n 's/^version:[[:space:]]*["'\'']\?\([^"'\'']*\)["'\'']\?$/\1/p' \
+              | head -n 1 \
+              | xargs
+          )
+
+          if [ -z "$NAME" ]; then
+            echo "Missing name in $SKILL_FILE"
+            exit 1
+          fi
+
+          if [ -z "$VERSION" ]; then
+            echo "Missing version in $SKILL_FILE"
+            exit 1
+          fi
+
+          if ! [[ "$NAME" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "Invalid skill name: $NAME"
+            echo "Expected kebab-case, for example: adaptive-sales-qualification"
+            exit 1
+          fi
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][a-zA-Z0-9.-]+)?$ ]]; then
+            echo "Invalid version: $VERSION"
+            echo "Expected semantic versioning, for example: 0.1.1"
+            exit 1
+          fi
+
+          FOLDER_NAME="$(basename "$SKILL_DIR")"
+
+          if [ "$FOLDER_NAME" != "$NAME" ]; then
+            echo "Folder name '$FOLDER_NAME' does not match skill name '$NAME'."
+            echo "Folder: $SKILL_DIR"
+            exit 1
+          fi
+
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "asset=${NAME}-v${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Create skill ZIP
+        shell: bash
+        env:
+          SKILL_DIR: ${{ matrix.skill }}
+          SKILL_NAME: ${{ steps.metadata.outputs.name }}
+          ASSET_NAME: ${{ steps.metadata.outputs.asset }}
+        run: |
+          set -euo pipefail
+          python build/release.py package --output dist \
+            --manifest-url "${{ vars.SKILL_MANIFEST_URL || 'https://agenthouse-org.github.io/skills/manifest.json' }}" \
+            --release-date "$(date -u +%F)"
+
+          echo "Created:"
+          ls -lh "dist/$ASSET_NAME" "dist/$ASSET_NAME.sha256"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.metadata.outputs.name }}-v${{ steps.metadata.outputs.version }}
+          path: |
+            dist/${{ steps.metadata.outputs.asset }}
+            dist/${{ steps.metadata.outputs.asset }}.sha256
+          retention-days: 30
+
+  release:
+    needs:
+      - discover
+      - package
+
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Download all packaged skills
+        uses: actions/download-artifact@v8
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Show release assets
+        shell: bash
+        run: |
+          find release-assets -maxdepth 1 -type f -print
+
+      - name: Generate central manifest
+        shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          python build/release.py manifest --output release-assets \
+            --repository "$REPOSITORY" \
+            --release-tag "$RELEASE_TAG" \
+            --release-date "$(date -u +%F)"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: AgentHouse Skills ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            release-assets/*.zip
+            release-assets/*.sha256
+            release-assets/manifest.json
+  update-readme:
+    needs:
+      - release
+
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Update skill catalogue and ZIP links
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python build/release.py update-docs \
+            --repository "$REPOSITORY" \
+            --release-tag "$RELEASE_TAG"
+
+      - name: Commit updated catalogue
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t readme_files < <(
+            find . -name README.md \
+              -not -path './.git/*' \
+              -not -path './build/*' \
+              -not -path './dist/*' \
+              -not -path './pages/*' \
+              | sed 's|^\./||' \
+              | sort
+          )
+
+          if git diff --quiet -- "${readme_files[@]}"; then
+            echo "README catalogue is already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -- "${readme_files[@]}"
+          git commit -m \
+            "docs: update skill catalogue for ${{ github.ref_name }}"
+          git push origin main
+
+  publish-pages:
+    needs:
+      - release
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build Pages directory
+        shell: bash
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          python build/release.py pages --output pages \
+            --repository "$REPOSITORY" \
+            --release-tag "$RELEASE_TAG" \
+            --release-date "$(date -u +%F)"
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Enables Pages automatically when the repository token has the
+          # required administration permission. Otherwise enable Pages once
+          # in Settings > Pages and select GitHub Actions as the source.
+          enablement: true
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4

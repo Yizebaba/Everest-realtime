@@ -32,6 +32,19 @@ def test_no_original_never_redraws_data(tmp_path):
     assert rec['cards']==[]
 
 
+def test_result_screenshot_url_overrides_the_source_url(monkeypatch, tmp_path):
+    import everest.evidence as module
+    captured = []
+    def fake_capture(url, path, settings):
+        captured.append(url)
+        Image.new('RGB', (20, 20), 'white').save(path)
+        return {'final_url': url}
+    monkeypatch.setattr(module, 'screenshot', fake_capture)
+    rec = record(); rec['screenshot'] = None; rec['screenshot_url'] = 'https://example.test/event-report'
+    make_cards(rec, tmp_path, {'screenshots': True})
+    assert captured == ['https://example.test/event-report']
+
+
 def test_blocked_page_not_used_as_original(tmp_path):
     Image.new('RGB',(20,20),'white').save(tmp_path/'page.png')
     (tmp_path/'rendered.html').write_text('您的请求可能存在威胁',encoding='utf-8')
@@ -49,7 +62,7 @@ def test_news_cards_only_use_confirmed_article_screenshots(tmp_path):
     assert len(rec['cards']) == 1
     with Image.open(rec['cards'][0]) as image:
         assert image.size[0] == 20
-        assert image.size[1] > 20
+        assert image.size[1] == 20
 
 
 def test_news_source_image_limit_is_respected(tmp_path):

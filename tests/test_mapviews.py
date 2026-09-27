@@ -18,6 +18,15 @@ def test_every_map_view_is_everest_positioned():
             assert view['layer'] and view['url'].startswith('https://'), (rule_id, view)
 
 
+def test_windy_weather_views_include_bilingual_camera_and_requested_layers():
+    config = load_views(Path(__file__).resolve().parents[1])
+    views = config['views']['weather-06']
+    assert views['translate'] is True
+    assert len(views['views']) == 16
+    assert views['views'][0]['layer'] == 'webcam'
+    assert all(view.get('name_en') for view in views['views'])
+
+
 def test_unverified_or_dead_maps_are_declared_not_claimed():
     root = Path(__file__).resolve().parents[1]
     config = load_views(root)

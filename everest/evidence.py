@@ -27,13 +27,35 @@ def screenshot(url, path, settings):
             if response and response.status >= 400:
                 raise ValueError('Browser HTTP '+str(response.status))
             page.wait_for_timeout(settings['browser_wait_ms'])
+            if 'watchers.news' in url:
+                # Give embedded maps a chance to render, but preserve the article screenshot
+                # when their third-party assets never finish loading.
+                try:
+                    map_like = page.locator('iframe, [class*="map"], [id*="map"]').filter(has=page.locator('canvas, img')).first
+                    map_like.scroll_into_view_if_needed(timeout=5000)
+                    page.wait_for_timeout(settings.get('article_map_settle_ms', 8000))
+                    page.evaluate('window.scrollTo(0,0)')
+                except Exception:
+                    pass
+            target_event = settings.get('earthquake_target', '')
             if 'earthquake.usgs.gov/earthquakes/map' in url:
                 try:
                     for item in page.locator('mat-list-option, .map-list-item, [role=option], .mat-list-item, .mat-mdc-list-item').all():
-                        if item.inner_text().strip():
+                        text = ' '.join(item.inner_text().split())
+                        if text and (not target_event or target_event.lower() in text.lower()):
                             item.click(timeout=3000)
                             page.wait_for_timeout(2500)
                             break
+                except Exception:
+                    pass
+                # The event panel may update before map tiles paint. Wait for the
+                # configured map settle window, but still preserve an original
+                # screenshot if upstream tiles remain unavailable.
+                page.wait_for_timeout(settings.get('earthquake_map_settle_ms', 15000))
+            elif 'emsc-csem.org' in url and target_event:
+                try:
+                    page.get_by_text(target_event, exact=False).last.click(timeout=3000)
+                    page.wait_for_timeout(2500)
                 except Exception:
                     pass
             if 'nature.com' in url:
@@ -50,7 +72,11 @@ def screenshot(url, path, settings):
             dismiss_gates(page)
             cleaned = clean_page(page, settings)
             page.wait_for_timeout(600)
-            if 'emsc-csem.org' in url:
+            if 'earthquake.usgs.gov/earthquakes/map' in url:
+                # The map tiles may be unavailable while the left event panel is
+                # already complete. Preserve the clicked event details, not a blue map.
+                page.screenshot(path=str(path), clip={'x': 0, 'y': 0, 'width': 520, 'height': 900}, timeout=15000)
+            elif 'emsc-csem.org' in url:
                 try:
                     right_box = page.locator('.hright, #hmap').first.bounding_box()
                     if right_box:
@@ -200,6 +226,7 @@ def make_cards(result, folder, settings):
                     'path': str(target),
                     'layer': view['layer'],
                     'name': layer_cn,
+                    'name_en': view.get('layer_en', ''),
                     'url': view.get('view_url', '')
                 })
             result['image_kind'] = 'everest_map_view'
@@ -209,7 +236,7 @@ def make_cards(result, folder, settings):
         return result
         result['screenshot_error'] = 'No Everest map view captured'
         return result
-    override = settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
+    override = result.get('screenshot_url') or settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
     sources = []
     if not override:
         if result['source']['rule_id'] == 'weather-03':
@@ -258,7 +285,12 @@ def make_cards(result, folder, settings):
             target=folder/f'chinese-page-{i+1:02d}.png'
             try:
                 language=settings.get('translation_source_languages',{}).get(result['source']['rule_id'],'auto')
-                info=chinese_screenshot(url,target,settings,language)
+                translation_settings = dict(settings)
+                translation_settings['earthquake_target'] = result.get('screenshot_event_text', '')
+                for key in ('translation_timeout_ms', 'translation_settle_ms'):
+                    if key in result['source']:
+                        translation_settings[key] = result['source'][key]
+                info=chinese_screenshot(url,target,translation_settings,language)
                 result['translations'].append(info)
                 translated.append(target)
             except Exception as exc:

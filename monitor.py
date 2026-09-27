@@ -14,6 +14,10 @@ from everest.collect import collect
 from everest.evidence import make_cards, write_report
 from everest.delivery import deliver, destination
 from everest.windy import metrics as windy_metrics
+from everest.webcam import collect_camera
+from everest.hurricanes import collect_hurricanes
+from everest.earthquakes import collect_earthquakes
+from everest.floodhub import collect_floodhub
 
 ROOT = Path(__file__).resolve().parent
 
@@ -33,7 +37,11 @@ def run(args, settings, sources, config, store, data):
     by_id = {source['rule_id']: source for source in sources['sources']}
     def job(source):
         target = folder / source['rule_id']
-        result = collect(source, sources.get('defaults', {}), settings, target, run_id)
+        result = (collect_floodhub(source, target, settings, run_id) if source['rule_id'] == 'flood-05'
+                  else collect_earthquakes(source, target, settings, run_id) if source['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02')
+                  else collect_hurricanes(source, target, settings, run_id) if source['rule_id'] == 'hurricane-01'
+                  else collect_camera(source, target, settings, run_id) if source['rule_id'] == 'camera-01'
+                  else collect(source, sources.get('defaults', {}), settings, target, run_id))
         return result, target
     delivery_lock = None
     try:
@@ -41,11 +49,13 @@ def run(args, settings, sources, config, store, data):
         delivery_lock = Lock()
         from everest.shadow_cep import evaluate as shadow_cep_evaluate
         from everest.shadow_dedup import evaluate as shadow_dedup_evaluate
+        from everest.event_review import review as event_review
         with ThreadPoolExecutor(max_workers=max(1, min(8, int(settings['workers'])))) as executor:
             futures = [executor.submit(job, s) for s in selected]
             for future in as_completed(futures):
                 result, target = future.result()
                 pair_trigger = False
+                camera_trigger = False
                 if result['source']['rule_id'] == 'weather-06':
                     metric = windy_metrics(result)
                     limits = settings.get('windy_pair', {})
@@ -58,6 +68,17 @@ def run(args, settings, sources, config, store, data):
                     if pair_trigger:
                         result['relevance'] = 'in_scope'
                         result['event_status'] = 'candidate'
+                if result['source']['rule_id'] == 'camera-01':
+                    camera_trigger = store.camera_frame_trigger(
+                        'camera-01', result.get('camera_frame_signature'), result['result'] == 'found',
+                        int(settings.get('camera_visual_hash_distance', 28)))
+                    result['camera_frame_trigger'] = camera_trigger
+                floodhub_trigger = False
+                if result['source']['rule_id'] == 'flood-05':
+                    floodhub_trigger = store.visual_frame_trigger(
+                        'flood-05', result.get('visual_frame_signature'), result['result'] == 'found',
+                        int(settings.get('floodhub_visual_hash_distance', 35)))
+                    result['floodhub_frame_trigger'] = floodhub_trigger
                 # Shadow CEP observes only the four selected numeric streams.
                 # It cannot alter original change detection, screenshots, or delivery.
                 try:
@@ -70,17 +91,43 @@ def run(args, settings, sources, config, store, data):
                     result['shadow_dedup'] = {'scope': 'shadow_only', 'error': type(exc).__name__}
                 # Browser screenshots are the expensive path. Create them only for a
                 # relevant source whose normalized event content actually changed.
-                if store.changed(result['source'], result) or pair_trigger:
+                flood_baseline = result['source']['rule_id'] == 'flood-02' and not store.has_gdacs_flood_baseline('flood-02')
+                changed = not flood_baseline and store.changed(result['source'], result)
+                if changed and result['source']['rule_id'] == 'flood-02':
+                    for event in result.get('matches', []):
+                        if event in result.get('added', []):
+                            try:
+                                result['screenshot_url'] = json.loads(event)['properties']['url']['report']
+                            except (KeyError, TypeError, ValueError):
+                                pass
+                            break
+                capture_needed = (camera_trigger or pair_trigger or floodhub_trigger
+                                  or args.notify == 'all'
+                                  or (result['source']['rule_id'] != 'weather-06' and changed))
+                if capture_needed:
                     if pair_trigger:
                         from everest.mapviews import capture_views
                         result['map_views'] = capture_views('weather-06', target, settings, settings['_root'])
                     try:
-                        make_cards(result, target, settings)
+                        card_settings = dict(settings)
+                        if result['source']['rule_id'] == 'camera-01':
+                            card_settings['translation_timeout_ms'] = settings.get('camera_translation_timeout_ms', 90000)
+                            card_settings['translation_settle_ms'] = settings.get('camera_translation_settle_ms', 8000)
+                            card_settings['fallback_to_original_on_translation_failure'] = False
+                        make_cards(result, target, card_settings)
                         result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
                     except Exception as exc:
                         result['card_error'] = type(exc).__name__
                 target = target / 'result.json'
-                store.record(result, target, 'all' if pair_trigger else args.notify, destination(config))
+                try:
+                    result['event_review'] = event_review(result['source'], result)
+                except Exception as exc:
+                    result['event_review'] = {'scope': 'shadow_only', 'framework': 'langgraph', 'error': type(exc).__name__}
+                policy = 'none' if flood_baseline or (result['source']['rule_id'] == 'flood-05' and not floodhub_trigger) else ('none' if result['source']['rule_id'] == 'weather-06' and not pair_trigger else (
+                    'all' if camera_trigger else
+                    'all' if pair_trigger else args.notify)
+                )
+                store.record(result, target, policy, destination(config))
                 if pair_trigger:
                     nasa_source = by_id[settings['windy_pair']['nasa_rule_id']]
                     nasa_target = folder / nasa_source['rule_id']
@@ -141,14 +188,34 @@ def fast_run(args, settings, sources, config, store, data):
             folder = data / 'fast' / source['rule_id']
             folder.mkdir(parents=True, exist_ok=True)
             try:
-                result = collect(source, sources.get('defaults', {}), settings, folder, run_id)
-                is_change = store.changed(source, result)
+                result = (collect_earthquakes(source, folder, settings, run_id)
+                          if source['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02')
+                          else collect(source, sources.get('defaults', {}), settings, folder, run_id))
+                earthquake_source = source['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02')
+                earthquake_baseline = earthquake_source and store.source_version(source['rule_id']) < 4
+                result['seed_event_keys'] = earthquake_baseline
+                is_change = not earthquake_baseline and store.changed(source, result)
                 if is_change:
+                    if result['source']['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02'):
+                        result['screenshot_event_text'] = store.first_unseen_event_text(result)
+                    if result['source']['rule_id'] == 'flood-02':
+                        for event in result.get('matches', []):
+                            if event in result.get('added', []):
+                                try:
+                                    result['screenshot_url'] = json.loads(event)['properties']['url']['report']
+                                except (KeyError, TypeError, ValueError):
+                                    pass
+                                break
                     try:
                         make_cards(result, folder, settings)
                         result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
                     except Exception as exc:
                         result['card_error'] = type(exc).__name__
+                    try:
+                        from everest.event_review import review as event_review
+                        result['event_review'] = event_review(result['source'], result)
+                    except Exception as exc:
+                        result['event_review'] = {'scope': 'shadow_only', 'framework': 'langgraph', 'error': type(exc).__name__}
                     # Snapshot per run: an unchanged later poll must not clobber the
                     # evidence a pending notice still points at.
                     snapshot = folder / f'{run_id}-result.json'
@@ -158,11 +225,66 @@ def fast_run(args, settings, sources, config, store, data):
                         stats = deliver(store, run_id, config, settings)
                         print(f"[fast] delivered {stats}", flush=True)
                 else:
+                    try:
+                        from everest.event_review import review as event_review
+                        result['event_review'] = event_review(result['source'], result)
+                    except Exception as exc:
+                        result['event_review'] = {'scope': 'shadow_only', 'framework': 'langgraph', 'error': type(exc).__name__}
                     store.record(result, folder / 'latest-result.json', 'none', destination(config))
-                    print(f"[fast {stamp[11:19]}] {source['rule_id']} {result['result']} changed=False", flush=True)
+                    if earthquake_baseline:
+                        store.set_source_version(source['rule_id'], 4)
+                    state = 'baseline=True' if earthquake_baseline else 'changed=False'
+                    print(f"[fast {stamp[11:19]}] {source['rule_id']} {result['result']} {state}", flush=True)
             except Exception as exc:
                 print(f"[fast] {source['rule_id']} error {type(exc).__name__}", flush=True)
+        if getattr(args, 'once', False):
+            return 0
         time.sleep(tick)
+
+
+def fast_source_once(args, settings, sources, config, store, data):
+    """Run one configured fast source; used only by the MCP execution gateway."""
+    source = next(s for s in sources['sources'] if s['rule_id'] == args.source)
+    if not source.get('enabled', True) or not source.get('interval_seconds'):
+        raise ValueError('Source is not an enabled fast source')
+    stamp = now()
+    if not args.all and not store.due(source, stamp):
+        return {'rule_id': source['rule_id'], 'status': 'not_due'}
+    folder = data / 'fast' / source['rule_id']
+    folder.mkdir(parents=True, exist_ok=True)
+    run_id = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ-') + uuid.uuid4().hex[:6]
+    result = (collect_earthquakes(source, folder, settings, run_id)
+              if source['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02')
+              else collect(source, sources.get('defaults', {}), settings, folder, run_id))
+    earthquake_source = source['rule_id'] in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'special-02')
+    earthquake_baseline = earthquake_source and store.source_version(source['rule_id']) < 4
+    result['seed_event_keys'] = earthquake_baseline
+    is_change = not earthquake_baseline and store.changed(source, result)
+    if is_change:
+        if earthquake_source:
+            result['screenshot_event_text'] = store.first_unseen_event_text(result)
+        try:
+            make_cards(result, folder, settings)
+            result['card_hashes'] = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in result['cards']}
+        except Exception as exc:
+            result['card_error'] = type(exc).__name__
+        snapshot = folder / f'{run_id}-result.json'
+        store.record(result, snapshot, 'changed', destination(config))
+        if result.get('cards') and settings.get('delivery_enabled', False):
+            delivery = deliver(store, run_id, config, settings)
+        else:
+            delivery = {'accepted': 0, 'blocked': 0, 'unconfirmed': 0}
+    else:
+        store.record(result, folder / 'latest-result.json', 'none', destination(config))
+        if earthquake_baseline:
+            store.set_source_version(source['rule_id'], 4)
+        delivery = {'accepted': 0, 'blocked': 0, 'unconfirmed': 0}
+    return {
+        'rule_id': source['rule_id'], 'run_id': run_id, 'result': result['result'],
+        'changed': is_change, 'baseline': earthquake_baseline,
+        'selected_for_notification': result.get('selected_for_notification', False),
+        'event_review': result.get('event_review'), 'delivery': delivery,
+    }
 
 
 def main(argv=None):
@@ -177,7 +299,11 @@ def main(argv=None):
     p.add_argument('--send', action='store_true', help='发送本轮已选择的逐来源图片消息')
     p = sub.add_parser('deliver')
     p.add_argument('--run-id', required=True)
-    sub.add_parser('fast')
+    p = sub.add_parser('fast')
+    p.add_argument('--once', action='store_true', help='执行一轮快速来源检查后退出')
+    p = sub.add_parser('fast-source')
+    p.add_argument('--source', required=True, help='执行一个快速来源')
+    p.add_argument('--all', action='store_true', help='忽略该来源到期时间')
     args = parser.parse_args(argv)
     sources = catalog(ROOT/'config/sources.json')
     if args.command == 'catalog':
@@ -185,7 +311,7 @@ def main(argv=None):
             print(f"{s['rule_id']}\t{s['category']}\t{s['name']}\t{s['url']}")
         print(f"{len(sources['sources'])} rules / {len({s['url'] for s in sources['sources']})} URLs")
         return 0
-    if args.command == 'run' and args.source:
+    if args.command in ('run', 'fast-source') and args.source:
         unknown = set(args.source)-{s['rule_id'] for s in sources['sources']}
         if unknown: parser.error('Unknown rule_id: '+', '.join(sorted(unknown)))
     settings = read_json(ROOT/'config/runtime.json')
@@ -208,6 +334,13 @@ def main(argv=None):
         store = Store(args.data_dir/'monitor.sqlite3')
         try:
             return fast_run(args, settings, sources, config, store, args.data_dir)
+        finally:
+            store.close()
+    if args.command == 'fast-source':
+        store = Store(args.data_dir/'monitor.sqlite3')
+        try:
+            print(json.dumps(fast_source_once(args, settings, sources, config, store, args.data_dir), ensure_ascii=False))
+            return 0
         finally:
             store.close()
     with run_lock(args.data_dir):

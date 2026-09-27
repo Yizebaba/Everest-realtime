@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 from .core import now, read_json
-from .translation import dismiss_gates
+from .translation import dismiss_gates, translate_page_to_chinese
 
 
 BLOCK_PAGES = ('您的请求可能存在威胁', '请求已被阻断', 'WEB 应用防火墙', 'Just a moment...')
@@ -40,8 +40,9 @@ def capture_views(rule_id, folder, settings, root):
             for index, view in enumerate(entry['views'], 1):
                 page = browser.new_page(viewport={'width': 1280, 'height': 900}, locale='zh-CN')
                 record = {'layer': view['layer'], 'layer_name': view.get('name', view['layer']),
-                          'view_url': view['url'], 'verified': view.get('verified', False),
-                          'everest_center': config.get('everest', {}).get('center'),
+                           'view_url': view['url'], 'verified': view.get('verified', False),
+                           'layer_en': view.get('name_en', ''),
+                           'everest_center': config.get('everest', {}).get('center'),
                           'captured_at': now(), 'image': None, 'error': ''}
                 try:
                     response = page.goto(view['url'], wait_until='domcontentloaded', timeout=45000)
@@ -49,6 +50,8 @@ def capture_views(rule_id, folder, settings, root):
                         raise ValueError('Map view HTTP ' + str(response.status))
                     page.wait_for_timeout(settings.get('map_settle_ms', 7000))
                     record['dismissed'] = dismiss_gates(page)
+                    if entry.get('translate', False):
+                        record['translation'] = translate_page_to_chinese(page, settings)
                     # If this view requested collapsing sidebars to maximize map canvas view
                     if view.get('collapse_sidebar'):
                         try:

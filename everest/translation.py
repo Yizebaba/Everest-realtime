@@ -152,6 +152,22 @@ def _cleanup_translation_artifacts(page):
     }""")
 
 
+def translate_page_to_chinese(page, settings):
+    """Translate an already loaded public page before capturing its original pixels."""
+    dismissed = dismiss_gates(page, rounds=4)
+    _inject_translate_widget(page)
+    try:
+        page.wait_for_function(
+            "() => (document.body.innerText.match(/[\\u3400-\\u9fff]/g)||[]).length >= 20",
+            timeout=settings.get('translation_timeout_ms', 30000))
+    except Exception:
+        pass
+    page.wait_for_timeout(settings.get('translation_settle_ms', 3000))
+    dismissed += dismiss_gates(page, rounds=2)
+    _cleanup_translation_artifacts(page)
+    return dismissed
+
+
 def chinese_screenshot(url, path, settings, source_language='auto'):
     from playwright.sync_api import sync_playwright
     parts = urlsplit(url)
@@ -190,6 +206,29 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             except Exception:
                 pass
             page.wait_for_timeout(settings.get('translation_settle_ms', 3000))
+            if 'watchers.news' in url:
+                try:
+                    map_like = page.locator('iframe, [class*="map"], [id*="map"]').filter(has=page.locator('canvas, img')).first
+                    map_like.scroll_into_view_if_needed(timeout=5000)
+                    page.wait_for_timeout(settings.get('article_map_settle_ms', 8000))
+                    page.evaluate('window.scrollTo(0,0)')
+                except Exception:
+                    pass
+            target_event = settings.get('earthquake_target', '')
+            if target_event:
+                try:
+                    if 'earthquake.usgs.gov/earthquakes/map' in url:
+                        for item in page.locator('.mat-mdc-list-item').all():
+                            if target_event.lower() in ' '.join(item.inner_text().split()).lower():
+                                item.click(timeout=3000)
+                                break
+                    else:
+                        page.get_by_text(target_event, exact=False).last.click(timeout=3000)
+                    page.wait_for_timeout(2500)
+                    if 'earthquake.usgs.gov/earthquakes/map' in url:
+                        page.wait_for_timeout(settings.get('earthquake_map_settle_ms', 15000))
+                except Exception:
+                    pass
             # Trigger lazy-loaded charts/maps so the screenshot is not full of spinners.
             try:
                 for _ in range(settings.get('lazy_scroll_steps', 4)):
@@ -217,7 +256,9 @@ def chinese_screenshot(url, path, settings, source_language='auto'):
             chinese = len(re.findall(r'[\u3400-\u9fff]', body))
             if chinese < 20:
                 raise ValueError('No translated Chinese source content')
-            if 'emsc-csem.org' in url:
+            if 'earthquake.usgs.gov/earthquakes/map' in url:
+                page.screenshot(path=str(path), clip={'x': 0, 'y': 0, 'width': 520, 'height': 900}, timeout=20000)
+            elif 'emsc-csem.org' in url:
                 try:
                     right_box = page.locator('.hright, #hmap').first.bounding_box()
                     if right_box:

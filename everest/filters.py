@@ -19,6 +19,12 @@ def structured_match(item, options):
     """Apply only explicitly configured coordinate/numeric/time filters."""
     if not options: return True
     from .collect import select_path
+    for path, expected in options.get('equals', {}).items():
+        try:
+            if select_path(item, path) != expected:
+                return False
+        except (KeyError, TypeError, IndexError):
+            return False
     bbox=options.get('bbox')
     if bbox:
         try:

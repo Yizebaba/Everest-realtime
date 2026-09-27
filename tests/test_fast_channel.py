@@ -60,6 +60,48 @@ def test_changed_detects_new_event_and_ignores_identical(tmp_path):
         store.close()
 
 
+def test_explicit_earthquake_event_keys_deduplicate_across_sources(tmp_path):
+    store = Store(tmp_path / 'events.db')
+    try:
+        first = make_result('earthquake-02', ['USGS wording'])
+        first['event_keys'] = ['quake:2026-09-15 00:00:1:2:3']
+        store.record(first, tmp_path / 'first.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+        second = make_result('earthquake-03', ['EMSC wording'])
+        second['event_keys'] = ['quake:2026-09-15 00:00:1:2:3']
+        Path(tmp_path / 'card.png').write_bytes(b'card')
+        second['cards'] = [str(tmp_path / 'card.png')]
+        # Existing event identity suppresses duplicate notices from another provider.
+        assert not store.record(second, tmp_path / 'second.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+    finally:
+        store.close()
+
+
+def test_first_unseen_event_text_selects_the_new_earthquake(tmp_path):
+    store = Store(tmp_path / 'event-target.db')
+    try:
+        first = make_result('earthquake-02', ['old quake'])
+        first['event_keys'] = ['quake:old']
+        store.record(first, tmp_path / 'old.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        current = make_result('earthquake-02', ['old quake', 'new quake'])
+        current['event_keys'] = ['quake:old', 'quake:new']
+        assert store.first_unseen_event_text(current) == 'new quake'
+    finally:
+        store.close()
+
+
+def test_earthquake_seed_stores_all_current_event_keys_without_notification(tmp_path):
+    store = Store(tmp_path / 'event-seed.db')
+    try:
+        current = make_result('earthquake-02', ['old quake', 'new quake'])
+        current['event_keys'] = ['quake:old', 'quake:new']
+        current['seed_event_keys'] = True
+        store.record(current, tmp_path / 'seed.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.earthquake_event_keys_seeded(current)
+        assert store.first_unseen_event_text(current) == ''
+    finally:
+        store.close()
+
+
 def test_unknown_fast_result_never_counts_as_change(tmp_path):
     store = Store(tmp_path / 'f.db')
     try:
@@ -72,6 +114,50 @@ def test_unknown_fast_result_never_counts_as_change(tmp_path):
         store.close()
 
 
+def test_earthquake_event_baseline_rejects_old_page_chrome(tmp_path):
+    store = Store(tmp_path / 'events.db')
+    try:
+        store.record(make_result('earthquake-02', ['Javascript must be enabled']), tmp_path / 'old.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_earthquake_event_baseline('earthquake-02') is False
+        store.record(make_result('earthquake-02', ['2026-09-25 09:46:30 19.341 -155.354 28 3.2']), tmp_path / 'new.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_earthquake_event_baseline('earthquake-02') is True
+    finally:
+        store.close()
+
+
+def test_earthquake_event_baseline_rejects_old_ceic_page_rows(tmp_path):
+    store = Store(tmp_path / 'ceic-events.db')
+    try:
+        store.record(make_result('earthquake-07', ['地震目录 2026-09-25 12:00:00']), tmp_path / 'old.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_earthquake_event_baseline('earthquake-07') is False
+        store.record(make_result('earthquake-07', ['M5.3 | 2026-09-25 12:00:00 UTC | -28.85, -67.1 | 120 km | 阿根廷']), tmp_path / 'new.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_earthquake_event_baseline('earthquake-07') is True
+    finally:
+        store.close()
+
+
+def test_event_parser_version_requires_one_silent_migration(tmp_path):
+    store = Store(tmp_path / 'version.db')
+    try:
+        assert store.source_version('earthquake-02') == 0
+        store.set_source_version('earthquake-02', 4)
+        assert store.source_version('earthquake-02') == 4
+    finally:
+        store.close()
+
+
+def test_gdacs_flood_baseline_rejects_the_old_login_page(tmp_path):
+    store = Store(tmp_path / 'gdacs.db')
+    try:
+        store.record(make_result('flood-02', ['Log in']), tmp_path / 'old.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_gdacs_flood_baseline('flood-02') is False
+        flood = make_result('flood-02', ['{"properties": {"eventid": 1, "eventtype": "FL"}}'])
+        store.record(flood, tmp_path / 'gdacs.json', 'none', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.has_gdacs_flood_baseline('flood-02') is True
+    finally:
+        store.close()
+
+
 def test_requested_three_second_earthquake_sources():
     from everest.core import read_json
     sources = read_json(Path(__file__).parents[1] / 'config' / 'sources.json')['sources']
@@ -80,6 +166,8 @@ def test_requested_three_second_earthquake_sources():
     assert {'earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'special-02', 'earthquake-07', 'platform-10'} <= fast_ids
     assert by_id['earthquake-08']['enabled'] is False
     assert by_id['earthquake-10']['enabled'] is False
+    assert 'camera-01' not in by_id
+    assert by_id['hurricane-01']['daily_at_beijing'] == '07:00'
 
 
 def test_windy_uses_15_minute_polling_and_nasa_is_paired_only():
@@ -88,6 +176,61 @@ def test_windy_uses_15_minute_polling_and_nasa_is_paired_only():
     by_id = {source['rule_id']: source for source in sources}
     assert by_id['weather-06']['interval_minutes'] in (15, 30)
     assert by_id['weather-06']['enabled'] is True
+
+
+def test_flood_uses_gdacs_api_and_disables_expired_google_flood_link():
+    from everest.core import read_json
+    sources = {s['rule_id']: s for s in read_json(Path(__file__).parents[1] / 'config' / 'sources.json')['sources']}
+    assert 'gdacs.org/gdacsapi/api/events' in sources['flood-02']['url']
+    assert sources['flood-05']['enabled'] is True
+    assert sources['special-01']['enabled'] is False
+
+
+def test_gdacs_flood_source_filters_only_flood_events():
+    from everest.core import read_json
+    sources = {s['rule_id']: s for s in read_json(Path(__file__).parents[1] / 'config' / 'sources.json')['sources']}
+    assert sources['flood-02']['watch']['structured']['equals']['properties.eventtype'] == 'FL'
+
+
+def test_floodhub_visual_trigger_requires_a_large_map_change(tmp_path):
+    store = Store(tmp_path / 'floodhub.db')
+    try:
+        first = bytes(576).hex()
+        small = (bytes([5]) * 576).hex()
+        large = (bytes([40]) * 576).hex()
+        assert store.visual_frame_trigger('flood-05', first, True, 35) is False
+        assert store.visual_frame_trigger('flood-05', small, True, 35) is False
+        assert store.visual_frame_trigger('flood-05', large, True, 35) is True
+    finally:
+        store.close()
+
+
+def test_daily_beijing_schedule_runs_once_after_seven(tmp_path):
+    store = Store(tmp_path / 'daily.db')
+    try:
+        source = {'rule_id': 'hurricane-01', 'interval_minutes': 1440, 'daily_at_beijing': '07:00'}
+        assert store.due(source, '2026-09-15T22:59:00+00:00') is False
+        assert store.due(source, '2026-09-15T23:00:00+00:00') is True
+        checked = make_result('hurricane-01')
+        checked['retrieved_at'] = '2026-09-15T23:00:00+00:00'
+        store.record(checked, tmp_path / 'h.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.due(source, '2026-09-16T01:00:00+00:00') is False
+        assert store.due(source, '2026-09-16T23:00:00+00:00') is True
+    finally:
+        store.close()
+
+
+def test_daily_beijing_schedule_retries_after_invalid_attempt(tmp_path):
+    store = Store(tmp_path / 'daily-retry.db')
+    try:
+        source = {'rule_id': 'hurricane-01', 'interval_minutes': 1440, 'daily_at_beijing': '07:00'}
+        failed = make_result('hurricane-01')
+        failed['result'] = 'unknown'
+        failed['retrieved_at'] = '2026-09-15T23:00:00+00:00'
+        store.record(failed, tmp_path / 'failed.json', 'changed', destination({'serverchan': {'sendkey': 'k'}}))
+        assert store.due(source, '2026-09-16T01:00:00+00:00') is True
+    finally:
+        store.close()
 
 
 def test_paired_weather_triggers_on_activation_or_temperature_drop(tmp_path):

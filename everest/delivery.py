@@ -5,6 +5,8 @@ import json
 import re
 import time
 from pathlib import Path
+from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -12,6 +14,46 @@ from .core import fingerprint, read_json
 from .page_renderer import render_notification_page, build_evidence_page
 
 SIGNATURE = 'WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
+
+# Headquarters/operator civil time for currently enabled sources. An explicit
+# per-source timezone always takes precedence over this reviewed host mapping.
+OPERATOR_TIMEZONES = {
+    'earthquake.usgs.gov': 'America/New_York',
+    'www.emsc-csem.org': 'Europe/Paris',
+    'www.seismicportal.eu': 'Europe/Paris',
+    'geofon.gfz.de': 'Europe/Berlin',
+    'www.ceic.ac.cn': 'Asia/Shanghai',
+    'www.windy.com': 'Europe/Prague',
+    'www.ventusky.com': 'Europe/Prague',
+    'global-flood.emergency.copernicus.eu': 'Europe/Brussels',
+    'sites.research.google': 'America/Los_Angeles',
+    'worldview.earthdata.nasa.gov': 'America/New_York',
+    'www.12379.cn': 'Asia/Shanghai',
+    'watchers.news': 'Europe/Zagreb',
+    'weather.cma.cn': 'Asia/Shanghai',
+    'seismonepal.gov.np': 'Asia/Kathmandu',
+    'ocha-dap.github.io': 'Europe/Zurich',
+    'www.nature.com': 'Europe/London',
+}
+
+
+def source_timezone(source):
+    return source.get('timezone') or OPERATOR_TIMEZONES.get(urlsplit(source['url']).hostname or '')
+
+
+def format_observation_time(value, timezone_name=None):
+    """Format evidence-page time in the source's local civil time."""
+    if not value:
+        return ''
+    try:
+        observed = dt.datetime.fromisoformat(value.replace('Z', '+00:00'))
+        if observed.tzinfo is None:
+            observed = observed.replace(tzinfo=dt.timezone.utc)
+        if timezone_name:
+            observed = observed.astimezone(ZoneInfo(timezone_name))
+        return observed.strftime('%Y-%m-%d %H:%M:%S %Z (UTC%z)')
+    except Exception:
+        return value
 
 LAYER_NAMES = {
     'wind': '风力图层',
@@ -111,7 +153,20 @@ def _deploy_to_github_pages(file_name, html_content, config):
         payload['sha'] = sha
     res = requests.put(url, headers=headers, json=payload, timeout=20)
     if res.status_code in (200, 201):
-        return f"{page_base_url}/{rel_path}"
+        page_url = f"{page_base_url}/{rel_path}"
+        # The Contents API acknowledges the write before GitHub Pages has deployed it.
+        # Do not send a link that still returns GitHub's transient 404 page.
+        deadline = time.monotonic() + 90
+        while time.monotonic() < deadline:
+            try:
+                published = requests.get(page_url, timeout=10)
+                if published.status_code == 200:
+                    return page_url
+            except requests.RequestException:
+                pass
+            time.sleep(3)
+        print('GitHub Pages publish did not become available before timeout', flush=True)
+        return None
     print(f"Deploy to GitHub Pages error: {res.status_code} {res.text[:100]}", flush=True)
     return None
 
@@ -201,7 +256,7 @@ def _send_wechat(config, title, text, image_urls=None):
     token = _get_wechat_token(app_id, app_secret)
     url = f'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={token}'
 
-    m_time = re.search(r'监测时间：([^\n]+)', text)
+    m_time = re.search(r'通知时间（北京时间）：([^\n]+)', text)
     time_raw = m_time.group(1) if m_time else ''
     
     # 微信卡片时间：统一换算为北京时间 (UTC+8) 便于手机即时查看
@@ -319,7 +374,9 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         source = record['source']
         source_url = record.get('original_capture', {}).get('final_url') or source['url']
         retrieved_raw = record.get('retrieved_at')
-        time_line = f"监测时间：{retrieved_raw}\n" if retrieved_raw else ""
+        observation_time = format_observation_time(retrieved_raw, source_timezone(source))
+        beijing_time = format_observation_time(retrieved_raw, 'Asia/Shanghai')
+        time_line = f"监测时间：{observation_time}\n通知时间（北京时间）：{beijing_time}\n" if retrieved_raw else ""
         text = f"来源：{source_url}\n{time_line}\n"
         layer_names_list = []
         if record.get('image_kind') == 'everest_map_view':
@@ -329,7 +386,9 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
                 for it, url in zip(items, urls):
                     name = it.get('name') or LAYER_NAMES.get(it['layer'], it['layer'])
                     layer_names_list.append(name)
-                    text += f"图层：{name}\n![{name}]({url})\n\n"
+                    name_en = it.get('name_en', '')
+                    label = f"{name} / {name_en}" if name_en else name
+                    text += f"图层：{label}\n![{label}]({url})\n\n"
             else:
                 raw = record.get('map_view_layers') or []
                 count = len(urls) if urls else len(raw)
@@ -352,9 +411,10 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         total_imgs = len(urls)
         for idx, u in enumerate(urls, 1):
             cn_title = layer_names_list[idx - 1] if (is_map_view and idx - 1 < len(layer_names_list)) else ""
+            item = (record.get('map_view_items') or [])[idx - 1] if is_map_view and idx <= len(record.get('map_view_items') or []) else {}
             evidence_cards.append({
                 'layer_cn': cn_title,
-                'layer_en': '',
+                'layer_en': item.get('name_en', ''),
                 'layer_index': idx,
                 'layer_total': total_imgs,
                 'image_url': u,
@@ -365,7 +425,7 @@ def deliver(store, run_id, config, settings, uploader=upload, sender=send, sleep
         html_content = render_notification_page(
             title=f"产品名称 · {source['name']}",
             source_url=source_url,
-            time_str=retrieved_raw or now(),
+            time_str=observation_time or now(),
             image_cards=evidence_cards,
             signature=SIGNATURE
         )

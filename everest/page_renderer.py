@@ -1,6 +1,6 @@
 import html
 
-def render_notification_page(title, source_url, time_str, image_cards, signature='vx:No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
+def render_notification_page(title, source_url, time_str, image_cards, signature='WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
     """
     World-Class Clean Style D with a Nepali system subtitle.
     image_cards: list of dicts, each like:
@@ -256,9 +256,11 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         .layer-heading-row {{
             display: flex;
             align-items: baseline;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 12px;
             flex: 1;
+            min-width: 0;
+            overflow-x: auto;
         }}
 
         .layer-title-link {{
@@ -283,6 +285,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             color: var(--text-muted);
             font-size: 14px;
             font-weight: 500;
+            white-space: nowrap;
         }}
 
         .flow-index-tag {{
@@ -383,9 +386,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
 
         <!-- 页面最底部细线署名：中文、英文、尼泊尔语统一使用同一署名 -->
         <footer class="footer-banner">
-            <div class="ft-lead">WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
-            <div class="ft-sub">WeChat: No1-Shine ｜ Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
-            <div class="ft-nepali">WeChat: No1-Shine ｜ सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
+            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
+            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>

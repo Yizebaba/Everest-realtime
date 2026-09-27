@@ -41,7 +41,7 @@ def test_translate_before_selecting_sent_image_preserves_original(monkeypatch,tm
     assert (tmp_path/'page.png').read_bytes()==original
     with Image.open(record['cards'][0]) as image:
         assert image.size[0] == 40
-        assert image.size[1] > 40
+        assert image.size[1] == 40
 
 
 def test_translation_failure_not_mislabelled_chinese(monkeypatch,tmp_path):
@@ -54,3 +54,14 @@ def test_translation_failure_not_mislabelled_chinese(monkeypatch,tmp_path):
     # Falls back to the original page; never labelled as Chinese.
     assert record['image_kind']=='original_screenshot'
     assert 'translation unavailable' in record['screenshot_error']
+
+
+def test_nature_translation_failure_falls_back_to_original(monkeypatch, tmp_path):
+    import everest.translation as module
+    monkeypatch.setattr(module, 'chinese_screenshot', lambda *args: (_ for _ in ()).throw(TimeoutError()))
+    Image.new('RGB', (40, 40), 'red').save(tmp_path / 'page.png')
+    record = {'source': {'url': 'https://example.test', 'rule_id': 'nature'},
+              'screenshot': {'captured_at': '2026-09-15T00:00:00Z'}}
+    make_cards(record, tmp_path, {'translate_screenshots': True, 'screenshots': False})
+    assert record['cards']
+    assert record['image_kind'] == 'original_screenshot'

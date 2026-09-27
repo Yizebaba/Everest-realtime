@@ -7,40 +7,46 @@ Runs two independent loops:
 The fast channel is a separate process so a slow page capture never delays it.
 """
 import os
-import subprocess
-import sys
+import threading
 import time
 from pathlib import Path
 
 from everest.core import now, write_json
-from everest.retention import cleanup_runs
+from everest.orchestrator import run_cycle
 
 TICK = int(os.environ.get('EVEREST_TICK_SECONDS', '300'))
 FAST = os.environ.get('EVEREST_FAST_ENABLED', 'true').lower() not in ('0', 'false', 'no')
+FAST_TICK = float(os.environ.get('EVEREST_FAST_TICK_SECONDS', '3'))
 
 
-def start_fast():
-    return subprocess.Popen([sys.executable, '-B', 'monitor.py', 'fast'])
+fast_state = {'last': None, 'error': ''}
 
 
-fast_proc = start_fast() if FAST else None
+def fast_loop():
+    while True:
+        try:
+            fast_state['last'] = run_cycle('fast')
+            fast_state['error'] = ''
+        except Exception as exc:
+            fast_state['error'] = type(exc).__name__
+        time.sleep(max(1, FAST_TICK))
+
+
+fast_thread = threading.Thread(target=fast_loop, name='langgraph-fast', daemon=True) if FAST else None
+if fast_thread:
+    fast_thread.start()
+
 
 while True:
-    completed = subprocess.run(
-        [sys.executable, '-B', 'monitor.py', 'run', '--notify', 'changed', '--send'],
-        check=False,
-    )
-    fast_alive = fast_proc is not None and fast_proc.poll() is None
-    if fast_proc is not None and not fast_alive:
-        fast_proc = start_fast()
-        fast_alive = True
-    removed_runs = cleanup_runs(Path('data'), os.environ.get('EVEREST_RUN_RETENTION_HOURS', '48'))
+    normal = run_cycle('normal')
     write_json(Path('data/worker.json'), {
         'checked_at': now(),
-        'exit_code': completed.returncode,
-        'fast_channel_alive': fast_alive,
+        'fast': fast_state['last'] if FAST else {'execution': {'exit_code': 0}},
+        'fast_error': fast_state['error'],
+        'fast_channel_alive': bool(fast_thread and fast_thread.is_alive()),
+        'normal': normal,
         'tick_seconds': TICK,
+        'fast_tick_seconds': FAST_TICK,
         'run_retention_hours': int(os.environ.get('EVEREST_RUN_RETENTION_HOURS', '48')),
-        'removed_runs': removed_runs,
     })
     time.sleep(max(30, TICK))

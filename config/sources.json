@@ -265,6 +265,20 @@
       "interval_minutes": 15
     },
     {
+      "category": "专项监控",
+      "category_id": "hurricane",
+      "name": "Windy 全球飓风跟踪器",
+      "rule_id": "hurricane-01",
+      "source_id": "windy-hurricanes",
+      "source_tier": "core",
+      "nature": "observation",
+      "url": "https://www.windy.com/zh/-%E9%A3%93%E9%A3%8E%E8%B7%9F%E8%B8%AA%E5%99%A8/hurricanes/odalys?17.100,-124.200,6,p:favs",
+      "enabled": true,
+      "interval_minutes": 1440,
+      "daily_at_beijing": "07:00",
+      "max_pages": 1
+    },
+    {
       "category": "气象",
       "category_id": "weather",
       "name": "尼泊尔 DHM 水文气象局",
@@ -353,7 +367,7 @@
       "source_id": "weather-07",
       "source_tier": "core",
       "nature": "forecast",
-      "url": "https://www.ventusky.com/zh/%E5%8D%AB%E6%98%9F-%E5%9C%B0%E5%9B%BE#p=23.4;90.0;4",
+      "url": "https://www.ventusky.com/zh/%E4%BD%93%E6%84%9F%E6%B8%A9%E5%BA%A6-%E5%9C%B0%E5%9B%BE#p=27.99;86.92;7",
       "enabled": true,
       "interval_minutes": 30,
       "max_pages": 1
@@ -416,13 +430,21 @@
     {
       "category": "水文洪水",
       "category_id": "flood",
-      "name": "GloFAS 全球洪水预警",
+      "name": "GDACS 全球洪水预警 API",
       "rule_id": "flood-02",
       "source_id": "flood-02",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://global-flood.emergency.copernicus.eu/map/",
-      "enabled": true,
+      "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH",
+      "watch": {
+        "json_path": "features",
+        "structured": {
+          "equals": {
+            "properties.eventtype": "FL"
+          }
+        }
+      },
+      "enabled": false,
       "interval_minutes": 30
     },
     {
@@ -453,12 +475,12 @@
     {
       "category": "水文洪水",
       "category_id": "flood",
-      "name": "Google Flood Hub (灾害点放大直达)",
+      "name": "Google Flood Hub 珠峰附近洪水图",
       "rule_id": "flood-05",
       "source_id": "flood-05",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://sites.research.google/floods/l/29.125888170267654/89.29935720949042/6.157499999999997?layers=3&hide_layers=5%2C2",
+      "url": "https://sites.research.google/floods/l/27.488079751389613/86.36651720778833/7.420499999999995?layers=3&hide_layers=5%2C2",
       "enabled": true,
       "interval_minutes": 30,
       "note": "免登录具体洪水灾害点定位"
@@ -1303,7 +1325,7 @@
         "signal_keywords": []
       },
       "cadence_min": 10,
-      "enabled": true,
+      "enabled": false,
       "interval_minutes": 30
     },
     {
@@ -1551,6 +1573,9 @@
       "source_tier": "context",
       "nature": "news",
       "url": "https://www.nature.com/",
+      "timezone": "Europe/London",
+      "translation_timeout_ms": 90000,
+      "translation_settle_ms": 8000,
       "enabled": true,
       "interval_minutes": 30
     }

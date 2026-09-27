@@ -12,7 +12,6 @@
     "endpoints": ["https://himawari8.nict.go.jp/img/D531106/latest.json"]
   },
   "earthquake-04": {"map": true},
-  "flood-02": {"map": true},
   "flood-03": {"map": true},
   "flood-05": {"map": true}
 }

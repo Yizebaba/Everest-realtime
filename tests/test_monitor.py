@@ -25,6 +25,7 @@ def no_network(monkeypatch):
     import requests
     def deny(*a, **kw): raise AssertionError('Tests cannot access network')
     monkeypatch.setattr(requests.sessions.Session, 'request', deny)
+    monkeypatch.setattr('everest.delivery._deploy_to_github_pages', lambda *a: None)
 
 
 @pytest.fixture
@@ -63,6 +64,12 @@ def test_nested_selector_and_decimal():
     src={**SOURCE,'watch':{'selector':'article .body'}}
     body=b'<article><p class="body">Everest flood level 15.5 metres</p></article>'
     assert extract(body,'text/html',src,DEFAULTS)[2]==['Everest flood level 15.5 metres']
+
+
+def test_structured_equals_filter_keeps_only_requested_event_type():
+    source = {**SOURCE, 'watch': {'match_mode': 'all', 'structured': {'equals': {'properties.eventtype': 'FL'}}}}
+    body = b'{"features":[{"properties":{"eventtype":"FL","eventid":1}},{"properties":{"eventtype":"TC","eventid":2}}]}'
+    assert len(extract(body, 'application/json', source, DEFAULTS)[2]) == 1
 
 
 def test_missing_selector_not_empty_success():
@@ -166,6 +173,18 @@ def test_uncertain_send_not_retried(store,tmp_path):
     assert stats['unconfirmed']==1 and store.notices('run-one')==[]
 
 
+def test_provider_rejection_not_retried(store,tmp_path):
+    queued(store,tmp_path)
+    sent=[]
+    def sender(*a):
+        sent.append(a)
+        return {'code': 400, 'message': 'rejected'}
+    stats=deliver(store,'run-one',CONFIG,SETTINGS,uploader=lambda *a:'https://example.test/card.png',sender=sender,sleeper=lambda _:None)
+    assert stats['blocked']==1 and len(sent)==1
+    assert deliver(store,'run-one',CONFIG,SETTINGS,sender=sender)['accepted']==0
+    assert len(sent)==1 and store.notices('run-one')==[]
+
+
 def test_modified_card_blocked(store,tmp_path):
     r=queued(store,tmp_path)
     Path(r['cards'][0]).write_bytes(b'bad')
@@ -201,6 +220,62 @@ def test_cli_full_run_isolated(monkeypatch,tmp_path):
     assert latest['completed']==1 and Path(latest['report']).exists()
 
 
+def test_windy_page_change_without_threshold_does_not_queue_notice(monkeypatch, tmp_path):
+    source = {
+        'rule_id': 'weather-06', 'name': 'Windy', 'url': 'https://example.test/windy',
+        'category': '气象', 'category_id': 'weather', 'interval_minutes': 30,
+    }
+    result = {
+        'run_id': 'run-windy', 'source': source, 'result': 'found',
+        'retrieved_at': '2026-09-15T00:00:00+00:00', 'matches': ['camera refresh'],
+        'cards': [], 'relevance': 'in_scope', 'event_status': 'candidate',
+    }
+    store = Store(tmp_path / 'test.db')
+    try:
+        store.record({**result, 'matches': ['earlier camera refresh']}, tmp_path / 'old.json', 'none', destination(CONFIG))
+        args = type('Args', (), {'source': ['weather-06'], 'all': True, 'notify': 'changed', 'send': False})()
+        settings = {**SETTINGS, 'workers': 1, 'windy_pair': {
+            'nasa_rule_id': 'satellite-01', 'wind_kmh_min': 60,
+            'precipitation_mm_min': 10, 'temperature_drop_c_min': 5,
+        }, '_root': str(Path(__file__).resolve().parents[1])}
+        sources = {'sources': [source, {**source, 'rule_id': 'satellite-01', 'enabled': False}], 'defaults': {}}
+        monkeypatch.setattr(monitor, 'collect', lambda *args: {**result})
+        monkeypatch.setattr(monitor, 'windy_metrics', lambda _: {
+            'wind_kmh': 20, 'precipitation_mm': 0, 'temperature_c': -10,
+        })
+        monkeypatch.setattr(monitor, 'write_report', lambda *args: None)
+        assert monitor.run(args, settings, sources, CONFIG, store, tmp_path) == 0
+        latest = read_json(tmp_path / 'latest.json')
+        saved = read_json(Path(latest['report']).parent / 'weather-06' / 'result.json')
+        assert saved['change'] == 'changed'
+        assert saved['paired_nasa_trigger'] is False
+        assert saved['cards'] == []
+        assert saved['selected_for_notification'] is False
+        assert store.notices(latest['run_id']) == []
+    finally:
+        store.close()
+
+
+def test_notify_all_captures_current_evidence(monkeypatch, tmp_path):
+    source = {**SOURCE, 'rule_id': 'earthquake-02', 'category_id': 'earthquake'}
+    record = result(); record['source'] = source
+    store = Store(tmp_path / 'test.db')
+    try:
+        monkeypatch.setattr(monitor, 'collect_earthquakes', lambda *args: {**record})
+        monkeypatch.setattr(monitor, 'make_cards', lambda r, folder, settings: r.update(cards=[str(tmp_path / 'proof.png')]))
+        (tmp_path / 'proof.png').write_bytes(b'proof')
+        monkeypatch.setattr(monitor, 'write_report', lambda *args: None)
+        args = type('Args', (), {'source': ['earthquake-02'], 'all': True, 'notify': 'all', 'send': False})()
+        settings = {**SETTINGS, 'workers': 1, 'windy_pair': {'nasa_rule_id': 'satellite-01', 'wind_kmh_min': 60, 'precipitation_mm_min': 10, 'temperature_drop_c_min': 5}, '_root': str(Path(__file__).resolve().parents[1])}
+        sources = {'sources': [source], 'defaults': {}}
+        assert monitor.run(args, settings, sources, CONFIG, store, tmp_path) == 0
+        latest = read_json(tmp_path / 'latest.json')
+        saved = read_json(Path(latest['report']).parent / 'earthquake-02' / 'result.json')
+        assert saved['cards'] and saved['selected_for_notification'] is True
+    finally:
+        store.close()
+
+
 def test_wechat_destination_and_delivery(store, tmp_path):
     wx_cfg = {
         'wechat': {
@@ -225,4 +300,3 @@ def test_wechat_destination_and_delivery(store, tmp_path):
         return {'code': 0}
     stats = deliver(store, 'run-one', wx_cfg, SETTINGS, uploader=lambda *a: 'https://example.test/card.png', sender=mock_sender, sleeper=lambda _: None)
     assert stats['accepted'] == 1 and len(sent) == 1
-
