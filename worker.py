@@ -41,10 +41,13 @@ while True:
     normal = run_cycle('normal')
     write_json(Path('data/worker.json'), {
         'checked_at': now(),
-        'fast': fast_state['last'] if FAST else {'execution': {'exit_code': 0}},
+        'fast': {
+            'source_results': (fast_state['last'] or {}).get('source_results', []) if FAST else [],
+            'execution': (fast_state['last'] or {}).get('execution', {'exit_code': 0}) if FAST else {'exit_code': 0},
+        },
         'fast_error': fast_state['error'],
         'fast_channel_alive': bool(fast_thread and fast_thread.is_alive()),
-        'normal': normal,
+        'normal': normal.get('execution', normal),
         'tick_seconds': TICK,
         'fast_tick_seconds': FAST_TICK,
         'run_retention_hours': int(os.environ.get('EVEREST_RUN_RETENTION_HOURS', '48')),
