@@ -151,7 +151,7 @@
       "source_id": "earthquake-02",
       "source_tier": "core",
       "nature": "observation",
-      "url": "https://earthquake.usgs.gov/earthquakes/map/?extent=59.46741,-192.39258&extent=73.94679,-122.08008&showPopulationDensity=true&baseLayer=satellite",
+      "url": "https://earthquake.usgs.gov/earthquakes/map/?extent=48.74895,-199.42383&extent=78.33165,-115.04883&listOnlyShown=true&showPopulationDensity=true&baseLayer=satellite",
       "enabled": true,
       "interval_minutes": 15,
       "lightweight": true,
