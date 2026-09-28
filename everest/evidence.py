@@ -1,10 +1,9 @@
 """Original source screenshots only: no redrawn text or composited data cards."""
 import html
-import os
-import shutil
+import re
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 from .core import now, read_json
 from .clean import clean_page
@@ -39,19 +38,18 @@ def screenshot(url, path, settings):
                     pass
             target_event = settings.get('earthquake_target', '')
             if 'earthquake.usgs.gov/earthquakes/map' in url:
-                try:
-                    for item in page.locator('mat-list-option, .map-list-item, [role=option], .mat-list-item, .mat-mdc-list-item').all():
-                        text = ' '.join(item.inner_text().split())
-                        if text and (not target_event or target_event.lower() in text.lower()):
-                            item.click(timeout=3000)
-                            page.wait_for_timeout(2500)
-                            break
-                except Exception:
-                    pass
-                # The event panel may update before map tiles paint. Wait for the
-                # configured map settle window, but still preserve an original
-                # screenshot if upstream tiles remain unavailable.
-                page.wait_for_timeout(settings.get('earthquake_map_settle_ms', 15000))
+                valid_item = None
+                for item in page.locator('.mat-mdc-list-item, .mat-list-item, .map-list-item').all():
+                    text = ' '.join(item.inner_text().split())
+                    if (item.is_visible()
+                            and re.search(r'\d{4}-\d{2}-\d{2}', text)
+                            and re.search(r'\b(?:M\s*)?\d(?:\.\d)?\b', text)
+                            and '(UTC)' in text
+                            and (not target_event or target_event.lower() in text.lower())):
+                        valid_item = item
+                        break
+                if valid_item is None:
+                    raise ValueError('No rendered USGS earthquake event row')
             elif 'emsc-csem.org' in url and target_event:
                 try:
                     page.get_by_text(target_event, exact=False).last.click(timeout=3000)
@@ -70,12 +68,19 @@ def screenshot(url, path, settings):
             if any(marker in text for marker in BLOCK_PAGES):
                 raise ValueError('Source page blocked; original screenshot unavailable')
             dismiss_gates(page)
-            cleaned = clean_page(page, settings)
+            # USGS keeps its validated event list in a fixed panel. Generic
+            # sticky-overlay cleanup hides that panel and leaves only the map.
+            cleaned = {} if 'earthquake.usgs.gov/earthquakes/map' in url else clean_page(page, settings)
             page.wait_for_timeout(600)
             if 'earthquake.usgs.gov/earthquakes/map' in url:
-                # The map tiles may be unavailable while the left event panel is
-                # already complete. Preserve the clicked event details, not a blue map.
-                page.screenshot(path=str(path), clip={'x': 0, 'y': 0, 'width': 520, 'height': 900}, timeout=15000)
+                # Capture the validated event row, never the empty/blue map canvas.
+                try:
+                    valid_item.screenshot(path=str(path), timeout=15000)
+                except Exception:
+                    box = valid_item.bounding_box()
+                    if not box or box['width'] <= 0 or box['height'] <= 0:
+                        raise ValueError('Visible USGS event row has no screenshot bounds')
+                    page.screenshot(path=str(path), clip=box, timeout=15000)
             elif 'emsc-csem.org' in url:
                 try:
                     right_box = page.locator('.hright, #hmap').first.bounding_box()
@@ -135,76 +140,6 @@ LAYER_NAMES = {
 }
 
 
-def _decorate_evidence_card(image, source_url='', retrieved_at='', layer_title='', font_path=None, include_signature=True):
-    """Prepend a clean dark header with source URL, timestamp, layer info, and append signature at bottom if required."""
-    sig_zh = 'WeChat: No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'
-    sig_en = 'WeChat: No1-Shine ｜ Mt. Everest Natural Environment Information Monitoring System [Beta]'
-    sig_ne = 'WeChat: No1-Shine ｜ सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)'
-    font_file = font_path or os.environ.get('EVEREST_FONT', 'C:/Windows/Fonts/msyh.ttc')
-    # Enlarged high-visibility font sizes for phone screens
-    font_size = max(26, int(image.width * 0.026))
-    title_size = max(30, int(image.width * 0.030))
-    footer_size = max(20, int(image.width * 0.020))
-    try:
-        font = ImageFont.truetype(font_file, font_size)
-        title_font = ImageFont.truetype(font_file, title_size)
-        footer_font = ImageFont.truetype(font_file, footer_size)
-    except Exception:
-        font = ImageFont.load_default()
-        title_font = font
-        footer_font = font
-
-    # Format header text lines
-    lines = []
-    if source_url:
-        lines.append(('来源网址：' + source_url, '#38bdf8', font))
-    time_clean = (retrieved_at or now()).replace('T', ' ')[:19]
-    line2 = f"监测时间：{time_clean}"
-    if layer_title:
-        line2 += f"    {layer_title}"
-    lines.append((line2, '#f1f5f9', title_font if layer_title else font))
-
-    line_h = int(font_size * 1.7)
-    header_pad = int(font_size * 1.0)
-    header_h = header_pad * 2 + len(lines) * line_h
-
-    # 3-line footer banner at bottom of image
-    footer_line_h = int(footer_size * 1.6)
-    banner_h = int(footer_line_h * 3 + footer_size * 1.2) if include_signature else 0
-    total_h = header_h + image.height + banner_h
-
-    out_img = Image.new('RGB', (image.width, total_h), '#0f172a')
-    draw = ImageDraw.Draw(out_img)
-
-    # Render header
-    curr_y = header_pad
-    for text_content, color, f in lines:
-        draw.text((24, curr_y), text_content, fill=color, font=f)
-        curr_y += line_h
-    draw.line([(0, header_h), (image.width, header_h)], fill='#38bdf8', width=3)
-
-    # Paste screenshot image
-    out_img.paste(image, (0, header_h))
-
-    # Render bottom 3-line signature only on designated card
-    if include_signature:
-        footer_top = header_h + image.height
-        draw.line([(0, footer_top), (image.width, footer_top)], fill='#334155', width=2)
-        y_pos = footer_top + int(footer_size * 0.6)
-        for sig_text, sig_color in [(sig_zh, '#cbd5e1'), (sig_en, '#94a3b8'), (sig_ne, '#64748b')]:
-            bbox = draw.textbbox((0, 0), sig_text, font=footer_font)
-            text_w = bbox[2] - bbox[0]
-            x = max(10, (image.width - text_w) // 2)
-            draw.text((x, y_pos), sig_text, fill=sig_color, font=footer_font)
-            y_pos += footer_line_h
-
-    return out_img
-
-
-def _append_signature_bar(image, font_path=None, include_signature=True):
-    return _decorate_evidence_card(image, font_path=font_path, include_signature=include_signature)
-
-
 def make_cards(result, folder, settings):
     """Keep the existing cards transport field, but fill it only with original page pixels."""
     result['cards'] = []
@@ -232,8 +167,6 @@ def make_cards(result, folder, settings):
             result['image_kind'] = 'everest_map_view'
             result['map_view_layers'] = [view['layer'] for view in captured]
             return result
-        result['screenshot_error'] = 'No Everest map view captured'
-        return result
         result['screenshot_error'] = 'No Everest map view captured'
         return result
     override = result.get('screenshot_url') or settings.get('original_screenshot_urls', {}).get(result['source']['rule_id'])
