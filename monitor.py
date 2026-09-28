@@ -312,7 +312,8 @@ def main(argv=None):
         print(f"{len(sources['sources'])} rules / {len({s['url'] for s in sources['sources']})} URLs")
         return 0
     if args.command in ('run', 'fast-source') and args.source:
-        unknown = set(args.source)-{s['rule_id'] for s in sources['sources']}
+        requested_sources = args.source if isinstance(args.source, list) else [args.source]
+        unknown = set(requested_sources)-{s['rule_id'] for s in sources['sources']}
         if unknown: parser.error('Unknown rule_id: '+', '.join(sorted(unknown)))
     settings = read_json(ROOT/'config/runtime.json')
     settings['source_plans'] = read_json(ROOT/'config/acquisition.json')
