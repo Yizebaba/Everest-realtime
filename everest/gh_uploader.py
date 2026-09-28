@@ -1,4 +1,5 @@
 import base64
+import os
 import requests
 from pathlib import Path
 
@@ -10,8 +11,7 @@ def upload_image_to_github(path, owner='Yizebaba', repo='Everest-realtime', toke
     token = None
     candidates = [
         token_file,
-        Path('/app/github_token.txt'),
-        Path('D:/Zhufenjianche/github_token.txt'),
+        Path(os.environ.get('EVEREST_GITHUB_TOKEN_FILE', '/app/github_token.txt')),
         Path('/tmp/github_token.txt')
     ]
     for c in candidates:
