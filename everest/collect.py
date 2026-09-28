@@ -25,6 +25,9 @@ def classify_matches(source, matches):
     """Separate locally relevant event candidates from raw source content."""
     # 1. Fast earthquake & national warning channels: monitor ALL new global/national events directly into deduplication
     rid = source.get('rule_id', '')
+    if rid == 'platform-11':
+        # OCHA's public page is a research/analysis catalogue, not a live alert feed.
+        return [], 'out_of_scope', 'product_update'
     if rid in ('earthquake-02', 'earthquake-03', 'earthquake-04', 'earthquake-05', 'earthquake-07', 'platform-10', 'special-02'):
         if matches:
             return list(dict.fromkeys(matches)), 'in_scope', 'candidate'
@@ -205,6 +208,12 @@ def collect(source, defaults, settings, folder, run_id):
                     if map_source and result['map_images']:
                         title,content,matches,source_time=source['name'],[],[],None
                     else: raise
+                if source['rule_id'] == 'platform-10' and any(
+                    marker in ' '.join(content) for marker in ('系统升级中', '升级期间暂时无法访问')
+                ):
+                    content = []
+                    matches = []
+                    result['error'] = 'Source temporarily unavailable'
                 result['title'] = result.get('title') or title
                 result['content'].extend(content); result['matches'].extend(matches)
                 if source.get('category_id') == 'news' and entry['kind'] == 'matched_article':
@@ -273,8 +282,10 @@ def collect(source, defaults, settings, folder, run_id):
                 if '"cams":' not in c and '"ref":' not in c and '"update":' not in c
             ]
         result['matches']=list(dict.fromkeys(result['matches']))
-        has_content_match = bool(result['matches'])
         result['matches'], result['relevance'], result['event_status'] = classify_matches(source, result['matches'])
+        # Success must reflect the filtered, source-specific matches, not raw page
+        # text that was discarded as navigation, noise, or an out-of-scope product.
+        has_content_match = bool(result['matches'])
         result['coverage']='partial' if result['pending_urls'] or result['acquisition_errors'] else 'complete_for_requested_pages'
         if result['pages'] or result['map_images'] or result.get('map_views'):
             result['result']='found' if has_content_match or result['map_images'] else 'not_found'
