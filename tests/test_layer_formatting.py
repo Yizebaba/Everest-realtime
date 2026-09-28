@@ -14,7 +14,7 @@ def test_layer_names_translated_and_paired_with_images(tmp_path):
         
         result = {
             "run_id": "run-map",
-            "source": {"rule_id": "weather-06", "name": "Windy", "url": "https://www.windy.com/"},
+                "source": {"rule_id": "earthquake-02", "name": "USGS", "url": "https://earthquake.usgs.gov/"},
             "result": "found",
             "retrieved_at": "2026-09-15T00:00:00Z",
             "matches": ["sample"],
