@@ -27,6 +27,19 @@ def collect_floodhub(source, folder, settings, run_id):
                 if response and response.status >= 400:
                     raise ValueError('Flood Hub HTTP ' + str(response.status))
                 page.wait_for_timeout(settings.get('floodhub_settle_ms', 12000))
+                # The map shell and legend are always present. Only accept an
+                # event when the rendered map exposes a non-generic flood marker.
+                marker_count = page.locator(
+                    '[aria-label*="flood" i], [aria-label*="inundation" i], '
+                    '[title*="flood" i], [title*="inundation" i]'
+                ).count()
+                if marker_count == 0:
+                    result['result'] = 'not_found'
+                    result['error'] = 'No flood event marker found'
+                    result['pages'] = [{'url': page.url, 'kind': 'floodhub_map',
+                                        'content_type': 'text/html',
+                                        'retrieved_at': result['retrieved_at'], 'items': 0}]
+                    return result
                 image = Image.open(io.BytesIO(page.screenshot(type='png'))).convert('RGB')
                 target = folder / 'page.png'
                 image.save(target)
