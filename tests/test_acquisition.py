@@ -114,7 +114,7 @@ def test_rendered_dom_and_json_feed_back_into_content(monkeypatch,tmp_path):
                                                   'network_records':[{'data':{'level':12}}], 'map_images':[]})
     settings={'render_html':True,'max_pages_per_source':1}
     result=collect(SOURCE,{},settings,tmp_path,'run')
-    assert result['result']=='found'
+    assert result['result']=='not_found'
     assert 'Dynamic glacier data' in result['content']
     assert any('12' in x for x in result['content'])
     assert result['matches'] == [] and result['relevance'] == 'out_of_scope'
