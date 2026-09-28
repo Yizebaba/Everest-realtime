@@ -19,12 +19,17 @@ class CycleState(TypedDict, total=False):
 def _execute(state: CycleState):
     if state['kind'] != 'fast':
         return {'execution': call('normal_cycle')}
-    results = [call('run_fast_source', {'rule_id': rule_id}) for rule_id in state.get('fast_sources', FAST_RULE_IDS)]
+    requested = state.get('fast_sources', FAST_RULE_IDS)
+    if isinstance(requested, str):
+        requested = [requested]
+    results = [call('run_fast_source', {'rule_id': rule_id}) for rule_id in requested]
     return {'source_results': results, 'execution': {'fast_sources': results}}
 
 
 def _status(state: CycleState):
-    return {'status': call('read_runtime_status')}
+    # worker.json is an output of this graph. Reading it here causes each cycle
+    # to embed the prior complete worker state inside the next one.
+    return {'status': {'source': 'current_cycle'}}
 
 
 def build_graph():
