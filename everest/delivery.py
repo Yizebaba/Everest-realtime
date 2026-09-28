@@ -2,6 +2,7 @@ import base64
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -130,9 +131,7 @@ def _deploy_to_github_pages(file_name, html_content, config):
     page_base_url = f"https://{owner}.github.io/{repo}".rstrip('/')
     token = gh.get('token')
     if not token:
-        token_file = Path('/app/github_token.txt')
-        if not token_file.exists():
-            token_file = Path('D:/Zhufenjianche/github_token.txt')
+        token_file = Path(os.environ.get('EVEREST_GITHUB_TOKEN_FILE', '/app/github_token.txt'))
         if token_file.exists():
             token = token_file.read_text(encoding='utf-8').strip()
     if not token:
@@ -180,9 +179,7 @@ def _upload_github_image(path, config, file_prefix=''):
     image_base_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main".rstrip('/')
     token = gh.get('token')
     if not token:
-        token_file = Path('/app/github_token.txt')
-        if not token_file.exists():
-            token_file = Path('D:/Zhufenjianche/github_token.txt')
+        token_file = Path(os.environ.get('EVEREST_GITHUB_TOKEN_FILE', '/app/github_token.txt'))
         if token_file.exists():
             token = token_file.read_text(encoding='utf-8').strip()
     if not token:
@@ -292,22 +289,31 @@ def _send_wechat(config, title, text, image_urls=None):
     # If multiple images (multi-layer), send one template message for each layer image
     urls_to_send = image_urls if (image_urls and len(image_urls) > 0) else ['']
     last_res = None
+    delivered = []
+    delivery_errors = []
     for target_url in urls_to_send:
         for openid in tousers:
-            payload = {
-                'touser': openid,
-                'template_id': template_id,
-                'url': target_url,
-                'data': data
-            }
-            res = requests.post(url, json=payload, timeout=20)
-            res.raise_for_status()
-            ret = res.json()
-            if ret.get('errcode') != 0:
-                return {'code': ret.get('errcode', -1), 'message': ret.get('errmsg')}
-            last_res = ret
+            try:
+                payload = {
+                    'touser': openid,
+                    'template_id': template_id,
+                    'url': target_url,
+                    'data': data
+                }
+                res = requests.post(url, json=payload, timeout=20)
+                res.raise_for_status()
+                ret = res.json()
+                if ret.get('errcode') != 0:
+                    delivery_errors.append({'touser': openid, 'url': target_url, 'code': ret.get('errcode', -1), 'message': ret.get('errmsg', '')})
+                else:
+                    delivered.append({'touser': openid, 'url': target_url, 'result': ret})
+                    last_res = ret
+            except Exception as exc:
+                delivery_errors.append({'touser': openid, 'url': target_url, 'code': -1, 'message': type(exc).__name__})
             time.sleep(0.5)
-    return {'code': 0, 'data': last_res}
+    if delivery_errors and not delivered:
+        return {'code': delivery_errors[0]['code'], 'message': delivery_errors[0]['message'], 'delivered': delivered, 'errors': delivery_errors}
+    return {'code': 0 if delivered else -1, 'data': last_res, 'delivered': delivered, 'errors': delivery_errors}
 
 
 def send(config, title, text, image_urls=None):
