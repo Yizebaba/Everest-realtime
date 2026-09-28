@@ -15,7 +15,7 @@ from everest.evidence import make_cards, write_report
 import monitor
 
 DEFAULTS = {'match_mode': 'all_groups', 'keywords': ['everest'], 'signals': ['flood'], 'ignore': []}
-SOURCE = {'rule_id':'one', 'name':'珠峰数据源', 'url':'https://example.test', 'category':'新闻', 'nature':'news', 'interval_minutes':30}
+SOURCE = {'rule_id':'earthquake-02', 'name':'珠峰地震数据源', 'url':'https://example.test', 'category':'地震', 'category_id':'earthquake', 'nature':'observation', 'interval_minutes':30}
 CONFIG = {'serverchan': {'sendkey':'fake-unit-test-key'}}
 SETTINGS = {'screenshots':False, 'font':os.environ.get('EVEREST_FONT','C:/Windows/Fonts/msyh.ttc'), 'notification_interval_seconds':3}
 
