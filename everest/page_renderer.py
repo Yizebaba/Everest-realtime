@@ -55,7 +55,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <div class="layer-heading-row">
                 {heading_content}
             </div>
-            <div class="flow-index-tag">LAYER {idx:02d} / {tot:02d}</div>
+            
         </div>
         ''' if layer_parts else ''
 
@@ -325,22 +325,23 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         .ft-lead {{
             font-size: 14px;
             font-weight: 800;
-            color: var(--text-title);
-            margin-bottom: 6px;
-            letter-spacing: 0.3px;
+            color: #172554;
+            font-size: 11px;
+            margin-bottom: 3px;
+            letter-spacing: 0.1px;
         }}
 
         .ft-sub {{
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-            letter-spacing: 0.3px;
+            font-size: 9px;
+            color: #334155;
+            margin-bottom: 2px;
+            letter-spacing: 0.1px;
         }}
 
         .ft-nepali {{
             font-family: 'IBM Plex Sans Devanagari', sans-serif;
-            font-size: 12px;
-            color: var(--text-light);
+            font-size: 9px;
+            color: #334155;
             font-weight: 500;
         }}
     </style>
@@ -370,7 +371,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <div class="metric">
                 <span class="metric-label">来源：</span>
                 <span class="metric-val">
-                    <a href="{url_esc}" target="_blank">{url_esc}</a>
+                    <a href="{url_esc}" target="_blank">Windy 珠峰视角</a>
                 </span>
             </div>
             <div class="metric">
