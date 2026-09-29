@@ -44,7 +44,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         if cn:
             layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">{esc(cn)}</a>')
         if en:
-            layer_parts.append(f'<span class="lang-en-text">{esc(en)}</span>')
+            layer_parts.append(f'<a class="lang-en-text" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">{esc(en)}</a>')
             
         if not layer_parts and is_multi:
             layer_parts.append(f'<a class="layer-title-link" href="{esc(jump_url)}" target="_blank" rel="noopener noreferrer">图层 {idx}</a>')
