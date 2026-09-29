@@ -246,9 +246,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 12px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-bottom: 8px;
             padding: 12px 0 10px 0;
             border-bottom: 1.5px solid var(--text-title);
         }}
@@ -258,9 +258,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             align-items: baseline;
             flex-wrap: nowrap;
             gap: 8px;
-            flex: 1;
+            flex: 1 1 auto;
             min-width: 0;
-            overflow-x: auto;
+            overflow: hidden;
         }}
 
         .layer-title-link {{
@@ -270,6 +270,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             text-decoration: none;
             letter-spacing: -0.2px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
             transition: color 0.15s;
         }}
         .layer-title-link:hover {{ color: var(--accent-blue); }}
@@ -287,6 +290,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
+            flex: 1 1 auto;
+            min-width: 0;
             text-overflow: ellipsis;
         }}
 
