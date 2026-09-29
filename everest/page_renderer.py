@@ -55,7 +55,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <div class="layer-heading-row">
                 {heading_content}
             </div>
-            
+            <div class="flow-index-tag">{idx:02d} / {tot:02d}</div>
         </div>
         ''' if layer_parts else ''
 
@@ -360,10 +360,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             <h1 class="event-title-main">
                 <a href="{url_esc}" target="_blank">{title_esc}</a>
             </h1>
-            <div class="intl-subtitle-grid">
-                <div class="sub-item">
-                </div>
-            </div>
         </section>
 
         <!-- 来源与观测时间。 -->
@@ -378,7 +374,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                 <span class="metric-label">观测时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
-            <div class="flow-index-tag">{idx:02d} / {tot:02d}</div>
         </div>
 
         <!-- 多图层流 -->
@@ -388,8 +383,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
 
         <!-- 页面最底部细线署名：中文、英文、尼泊尔语统一使用同一署名 -->
         <footer class="footer-banner">
-            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
-            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]<div class="ft-nepali">सगरमাথा प्राकृतिक वातावरणीय सूचना अनुगमन तथा विश्लेषण प्रणाली (बिटा संस्करण)</div>
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监测分析系统［测试版］</div>
+            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
+            <div class="ft-nepali">सगरमाथा प्राकृतिक वातावरणीय सूचना अनुगमन प्रणाली (बिटा संस्करण)</div>
         </footer>
     </div>
 </body>
