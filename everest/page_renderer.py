@@ -1,6 +1,6 @@
 import html
 
-def render_notification_page(title, source_url, time_str, image_cards, signature='WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
+def render_notification_page(title, source_url, time_str, image_cards, judgment='未触发', signature='WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］'):
     """
     World-Class Clean Style D with a Nepali system subtitle.
     image_cards: list of dicts, each like:
@@ -17,6 +17,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
     title_esc = esc(title)
     url_esc = esc(source_url)
     time_esc = esc(time_str)
+    judgment_esc = esc(judgment)
     sig_esc = esc(signature)
     
     total = len(image_cards)
@@ -292,6 +293,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             overflow: hidden;
             flex: 1 1 auto;
             min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
             text-overflow: ellipsis;
         }}
 
@@ -375,6 +378,10 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                 <span class="metric-label">时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
+            <div class="metric">
+                <span class="metric-label">判定：</span>
+                <span class="metric-val">{judgment_esc}</span>
+            </div>
         </div>
 
         <!-- 多图层流 -->
@@ -404,4 +411,4 @@ def build_evidence_page(title, source_url, time_str, image_urls, layer_names=Non
             'image_url': u,
             'layer_target_url': source_url
         })
-    return render_notification_page(title, source_url, time_str, cards, signature)
+    return render_notification_page(title, source_url, time_str, cards, signature=signature)
