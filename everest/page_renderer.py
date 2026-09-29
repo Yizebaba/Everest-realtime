@@ -372,7 +372,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                 </span>
             </div>
             <div class="metric">
-                <span class="metric-label">观测时间：</span>
+                <span class="metric-label">时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
         </div>
