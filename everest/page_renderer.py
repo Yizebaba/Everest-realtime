@@ -129,8 +129,8 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             border-top: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
             border-radius: 0;
-            padding: 16px 20px;
-            margin-bottom: 16px;
+            padding: 0;
+            margin-bottom: 0;
             box-shadow: none;
         }}
 
@@ -361,18 +361,14 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         </header>
 
         <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
-        <section class="event-card">
-            <h1 class="event-title-main">
-                <a href="{url_esc}" target="_blank">{title_esc}</a>
-            </h1>
-        </section>
+        
 
         <!-- 来源与观测时间。 -->
         <div class="meta-metrics">
             <div class="metric">
                 <span class="metric-label">来源：</span>
                 <span class="metric-val">
-                    <a href="{url_esc}" target="_blank">Windy 珠峰视角</a>
+                    <a href="{url_esc}" target="_blank">{title_esc}</a>
                 </span>
             </div>
             <div class="metric">
