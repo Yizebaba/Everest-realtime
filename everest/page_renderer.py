@@ -380,7 +380,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                 <span class="metric-label">观测时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
-            <div class="flow-index-tag">LAYER {idx:02d} / {tot:02d}</div>
+            <div class="flow-index-tag">{idx:02d} / {tot:02d}</div>
         </div>
 
         <!-- 多图层流 -->
