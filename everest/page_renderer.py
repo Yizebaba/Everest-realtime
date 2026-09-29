@@ -129,13 +129,13 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             border-top: 1px solid var(--border-light);
             border-bottom: 1px solid var(--border-light);
             border-radius: 0;
-            padding: 24px 28px;
-            margin-bottom: 24px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
             box-shadow: none;
         }}
 
         .event-title-main {{
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 800;
             color: var(--text-title);
             letter-spacing: -0.2px;
@@ -295,9 +295,9 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             font-size: 10px;
             font-weight: 700;
             color: var(--text-title);
-            background: #f1f5f9;
-            border: 1px solid var(--border-line);
-            padding: 4px 12px;
+            background: transparent;
+            border: none;
+            padding: 2px 0;
             border-radius: 4px;
             white-space: nowrap;
         }}
@@ -362,8 +362,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             </h1>
             <div class="intl-subtitle-grid">
                 <div class="sub-item">
-                    <span class="sub-tag">नेपाली</span>
-                    <span class="sub-text-ne">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</span>
                 </div>
             </div>
         </section>
@@ -392,7 +390,6 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         <footer class="footer-banner">
             <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监控系统［测试版］</div>
             <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
-            <div class="ft-nepali">सगरमाथा बहु-प्रकोप वातावरण अनुगमन प्रणाली (परीक्षण संस्करण)</div>
         </footer>
     </div>
 </body>
