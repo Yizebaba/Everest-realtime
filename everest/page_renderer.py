@@ -257,15 +257,15 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
             display: flex;
             align-items: baseline;
             flex-wrap: nowrap;
-            gap: 12px;
+            gap: 8px;
             flex: 1;
             min-width: 0;
             overflow-x: auto;
         }}
 
         .layer-title-link {{
-            font-size: 19px;
-            font-weight: 900;
+            font-size: 16px;
+            font-weight: 800;
             color: var(--text-title);
             text-decoration: none;
             letter-spacing: -0.2px;
@@ -283,14 +283,16 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
         .lang-en-text {{
             font-family: 'Inter', sans-serif;
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }}
 
         .flow-index-tag {{
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 700;
             color: var(--text-title);
             background: #f1f5f9;
@@ -378,6 +380,7 @@ def render_notification_page(title, source_url, time_str, image_cards, signature
                 <span class="metric-label">观测时间：</span>
                 <span class="metric-val">{time_esc}</span>
             </div>
+            <div class="flow-index-tag">LAYER {idx:02d} / {tot:02d}</div>
         </div>
 
         <!-- 多图层流 -->
