@@ -297,6 +297,8 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
             min-width: 0;
             flex: 1 1 auto;
             min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
             text-overflow: ellipsis;
         }}
 
@@ -377,16 +379,12 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
                 </span>
             </div>
             <div class="metric">
-                <span class="metric-label">判定：</span>
+                <span class="metric-label">阈值：</span>
                 <span class="metric-val">{judgment_esc}</span>
             </div>
             <div class="metric">
                 <span class="metric-label">时间：</span>
                 <span class="metric-val">{time_esc}</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">判定：</span>
-                <span class="metric-val">{judgment_esc}</span>
             </div>
         </div>
 
