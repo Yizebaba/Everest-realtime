@@ -299,6 +299,8 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
             min-width: 0;
             flex: 1 1 auto;
             min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
             text-overflow: ellipsis;
         }}
 
@@ -364,7 +366,7 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
     <div class="container">
         <!-- 顶部机构名（纯净单行英文） -->
         <header class="world-topbar">
-            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
+            <div class="world-topbar-row"><div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div><div class="summit-elevation">珠峰最高点：8848.86米</div></div>
         </header>
 
         <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
