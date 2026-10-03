@@ -108,9 +108,21 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
 
         /* 顶部机构标头（取消第三行，仅保留纯净单行英文） */
         .world-topbar {{
+            position: relative;
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-line);
             margin-bottom: 28px;
+        }}
+
+        .summit-elevation {{
+            position: absolute;
+            right: 0;
+            bottom: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            line-height: 1;
+            color: var(--text-muted);
+            white-space: nowrap;
         }}
 
         .name-en {{
@@ -303,6 +315,8 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
             min-width: 0;
             flex: 1 1 auto;
             min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
             text-overflow: ellipsis;
         }}
 
@@ -368,7 +382,8 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
     <div class="container">
         <!-- 顶部机构名（纯净单行英文） -->
         <header class="world-topbar">
-            <div class="world-topbar-row"><div class="world-topbar-row"><div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div><div class="summit-elevation">8848.86</div></div><div class="summit-elevation">珠峰最高点：8848.86米</div></div>
+            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
+            <div class="summit-elevation">8848.86</div>
         </header>
 
         <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
