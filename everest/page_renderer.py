@@ -119,28 +119,27 @@ def render_notification_page(title, source_url, time_str, image_cards, judgment=
             left: 0;
             bottom: 0;
             width: 100%;
-            height: 4px;
-            background-color: #334155;
-            background-image: repeating-linear-gradient(
+            height: 1.5px;
+            background-color: #e2e8f0;
+            background-image: linear-gradient(
                 90deg,
-                #ef4444 0px, #ef4444 20px,
-                #f97316 20px, #f97316 40px,
-                #eab308 40px, #eab308 60px,
-                #22c55e 60px, #22c55e 80px,
-                #06b6d4 80px, #06b6d4 100px,
-                #3b82f6 100px, #3b82f6 120px,
-                #8b5cf6 120px, #8b5cf6 140px,
-                #ec4899 140px, #ec4899 160px
+                #ef4444 0%,
+                #f97316 14.28%,
+                #eab308 28.56%,
+                #10b981 42.84%,
+                #06b6d4 57.12%,
+                #3b82f6 71.4%,
+                #8b5cf6 85.68%,
+                #ec4899 92.84%,
+                #ef4444 100%
             );
-            background-size: 320px 100%;
-            border-radius: 2px;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-            animation: marqueeColors 4s linear infinite;
+            background-size: 200% 100%;
+            animation: smoothMarquee 6s linear infinite;
         }}
 
-        @keyframes marqueeColors {{
-            0% {{ background-position: 0 0; }}
-            100% {{ background-position: 320px 0; }}
+        @keyframes smoothMarquee {{
+            0% {{ background-position: 0% 50%; }}
+            100% {{ background-position: 200% 50%; }}
         }}
 
         .summit-elevation {{
