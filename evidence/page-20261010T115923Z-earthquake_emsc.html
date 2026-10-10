@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+    <title>EMSC 欧洲地震</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Devanagari:wght@400;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #ffffff;
+            --bg-muted: #f8fafc;
+            --border-light: #e5e7eb;
+            --border-line: #cbd5e1;
+            --accent-blue: #0284c7;
+            --accent-navy: #0f172a;
+            --text-title: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+            padding: 24px 20px 60px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        /* 顶部机构标头（取消第三行，仅保留纯净单行英文） */
+        .world-topbar {
+            position: relative;
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+        }
+
+        .world-topbar::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1.5px;
+            background-color: #e2e8f0;
+            background-image: linear-gradient(
+                90deg,
+                #ef4444 0%,
+                #f97316 14.28%,
+                #eab308 28.56%,
+                #10b981 42.84%,
+                #06b6d4 57.12%,
+                #3b82f6 71.4%,
+                #8b5cf6 85.68%,
+                #ec4899 92.84%,
+                #ef4444 100%
+            );
+            background-size: 200% 100%;
+            animation: smoothMarquee 6s linear infinite;
+        }
+
+        @keyframes smoothMarquee {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .summit-elevation {
+            position: absolute;
+            right: 0;
+            bottom: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            line-height: 1;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .name-en {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-title);
+            line-height: 1.2;
+        }
+
+        /* 主标题区域：底色放宽，文字向右内收 28px，取消尼泊尔语 */
+        .event-card {
+            background: var(--bg-muted);
+            border: none;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 0;
+            box-shadow: none;
+        }
+
+        .event-title-main {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.2px;
+            margin-bottom: 6px;
+        }
+
+        .event-title-main a {
+            color: var(--text-title);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .event-title-main a:hover {
+            color: var(--accent-blue);
+        }
+
+        .intl-subtitle-grid {
+            display: flex;
+            align-items: center;
+        }
+
+        .sub-item {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .sub-text-en {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .sub-text-ne {
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* 来源/时间：单行横排流动，来源在上，时间在下，不换行截断 */
+        .meta-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: 0;
+            padding: 0 0 20px 0;
+            margin-bottom: 36px;
+        }
+
+        .metric {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 15px;
+        }
+
+        .metric-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-title);
+            flex-shrink: 0;
+            letter-spacing: 0;
+        }
+
+        .metric-val {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-title);
+            word-break: break-all;
+        }
+
+        .metric-val a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* 图层流 */
+        .layer-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .flow-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .flow-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 12px 0 10px 0;
+            border-bottom: 1.5px solid var(--text-title);
+        }
+
+        .layer-heading-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: nowrap;
+            gap: 8px;
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .layer-title-link {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-title);
+            text-decoration: none;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            transition: color 0.15s;
+        }
+        .layer-title-link:hover { color: var(--accent-blue); }
+
+        .divider-slash {
+            color: var(--border-line);
+            font-weight: 300;
+            font-size: 15px;
+        }
+
+        .lang-en-text {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            text-overflow: ellipsis;
+        }
+
+        .flow-index-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-title);
+            background: transparent;
+            border: none;
+            padding: 2px 0;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .flow-image-box {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .flow-image-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* 页面底部署名：中文、英文和尼泊尔语使用同一署名。 */
+        .footer-banner {
+            margin-top: 50px;
+            padding: 24px 16px 12px;
+            border-top: 1px solid var(--border-line);
+            text-align: center;
+        }
+
+        .ft-lead {
+            font-size: 14px;
+            font-weight: 800;
+            color: #172554;
+            font-size: 11px;
+            margin-bottom: 3px;
+            letter-spacing: 0.1px;
+        }
+
+        .ft-sub {
+            font-size: 9px;
+            color: #334155;
+            margin-bottom: 2px;
+            letter-spacing: 0.1px;
+        }
+
+        .ft-nepali {
+            font-family: 'IBM Plex Sans Devanagari', sans-serif;
+            font-size: 9px;
+            color: #334155;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部机构名（纯净单行英文） -->
+        <header class="world-topbar">
+            <div class="name-en">MT. EVEREST OBSERVATION INITIATIVE</div>
+            <div class="summit-elevation">8848.86</div>
+        </header>
+
+        <!-- 主标题区域：标题下方显示尼泊尔语系统名称。 -->
+        
+
+        <!-- 来源与观测时间。 -->
+        <div class="meta-metrics">
+            <div class="metric">
+                <span class="metric-label">来源：</span>
+                <span class="metric-val">
+                    <a href="https://www.emsc-csem.org/" target="_blank">EMSC 欧洲地震</a>
+                </span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">阈值：</span>
+                <span class="metric-val">EMSC 欧洲地震：M4.4 JAVA, INDONESIA</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">时间：</span>
+                <span class="metric-val">2026年10月10日 19:59:24</span>
+            </div>
+        </div>
+
+        <!-- 多图层流 -->
+        <main class="layer-flow">
+            
+        <article class="flow-card">
+            
+        <div class="flow-header">
+            <div class="layer-heading-row">
+                <a class="layer-title-link" href="https://www.emsc-csem.org/" target="_blank" rel="noopener noreferrer">EMSC 欧洲地中海地震</a><span class="divider-slash">/</span><a class="lang-en-text" href="https://www.emsc-csem.org/" target="_blank" rel="noopener noreferrer">Homepage</a>
+            </div>
+            <div class="flow-index-tag">01 / 01</div>
+        </div>
+        
+            <div class="flow-image-box">
+                <img loading="lazy" src="https://pub-b108b09f540b4c2ea1a4b50badc578b9.r2.dev/zhufeng-monitor/20261010T115923Z-earthquake_emsc/img-20261010T115923Z-earthquake_emsc-01.png" alt="EMSC 欧洲地震 监测截图 1" />
+            </div>
+        </article>
+        
+        </main>
+
+        <!-- 页面最底部细线署名：中文、英文、尼泊尔语统一使用同一署名 -->
+        <footer class="footer-banner">
+            <div class="ft-lead">WeChat / VX : No1-Shine ｜ 珠峰自然环境信息监测分析系统［测试版］</div>
+            <div class="ft-sub">Mt. Everest Natural Environment Information Monitoring System [Beta]</div>
+            <div class="ft-nepali">सगरमाथा प्राकृतिक वातावरणीय सूचना अनुगमन प्रणाली (बिटा संस्करण)</div>
+        </footer>
+    </div>
+</body>
+</html>
