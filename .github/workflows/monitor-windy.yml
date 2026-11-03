@@ -28,7 +28,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           pip install --upgrade pip
-          pip install playwright boto3 requests apscheduler
+          pip install -r requirements.txt apscheduler
           playwright install --with-deps chromium
 
       - name: Generate Local Environment Config
