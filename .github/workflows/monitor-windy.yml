@@ -53,4 +53,4 @@ jobs:
 
       - name: Run Monitor & WeChat Dispatcher
         run: |
-          python monitor.py run --deliver
+          python monitor.py run --source weather-06 --send
